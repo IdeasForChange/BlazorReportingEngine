@@ -1,0 +1,54 @@
+﻿@using MudBlazor
+@inherits LayoutComponentBase
+
+@* Required *@
+<MudThemeProvider @bind-IsDarkMode="@isDarkMode" />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.Large"
+                   CloseButton="true"
+                   BackdropClick="false"
+                   NoHeader="true"
+                   Position="DialogPosition.Center"
+                   CloseOnEscapeKey="true" />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudText Typo="Typo.h6"><MudButton Variant="Variant.Text" Color="Color.Inherit">Risk Reporting</MudButton></MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@themeIcon" Color="Color.Inherit" OnClick="ToggleThemeMode" Class="mr-3" />
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Target="_blank" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="6">
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.False" Class="pt-5">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+
+@code {
+    bool _drawerOpen = true;
+    bool isDarkMode = false;
+    string themeIcon = Icons.Material.Filled.DarkMode;
+
+    void ToggleThemeMode()
+    {
+        isDarkMode = !isDarkMode;
+    }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
+

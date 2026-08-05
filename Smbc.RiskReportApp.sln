@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37411.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01. Presentaion", "01. Presentaion", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02. Web Api", "02. Web Api", "{9AB521D3-FC36-4CD0-90FF-D9E85BA19535}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03. Business Objects", "03. Business Objects", "{9C552F2F-5445-427A-BBEA-21F5CAD794BE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "04. Database & Infrastructure", "04. Database & Infrastructure", "{40E33235-F475-47C7-92ED-9700BE3A76FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "05. Domain Objects", "05. Domain Objects", "{ED1B5DD0-23CB-4E5B-BEE6-8C4E0B92F6BB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "06. Core Objects & Shared", "06. Core Objects & Shared", "{1A2AD897-6CE1-49A3-AB56-50FCD814C19B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "99. Tests", "99. Tests", "{61C77481-A815-459F-B0F2-06F587F06AA3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smbc.RiskReporting.WebUI", "src\Smbc.RiskReporting.WebUI\Smbc.RiskReporting.WebUI.csproj", "{26B88001-9102-448A-98A1-1FB6EAE1D100}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26B88001-9102-448A-98A1-1FB6EAE1D100}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26B88001-9102-448A-98A1-1FB6EAE1D100}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26B88001-9102-448A-98A1-1FB6EAE1D100}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26B88001-9102-448A-98A1-1FB6EAE1D100}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{26B88001-9102-448A-98A1-1FB6EAE1D100} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CF3A2195-C3E3-4A05-B82B-1267941483C3}
+	EndGlobalSection
+EndGlobal

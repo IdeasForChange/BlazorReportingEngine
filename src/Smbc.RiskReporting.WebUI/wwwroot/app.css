@@ -1,0 +1,10 @@
+/*
+    Adds a Frosted Glass Theme
+*/
+.mud-appbar,
+.mud-dialog,
+.mud-popover,
+.mud-drawer {
+    backdrop-filter: blur(5px) contrast(1.5) saturate(2) blur(10px) brightness(1.5) blur(20px);
+    -webkit-backdrop-filter: blur(5px) contrast(1.5) saturate(2) blur(10px) brightness(1.5) blur(20px);
+}
