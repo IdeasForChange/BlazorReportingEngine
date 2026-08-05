@@ -2,7 +2,7 @@
 @inherits LayoutComponentBase
 
 @* Required *@
-<MudThemeProvider @bind-IsDarkMode="@isDarkMode" />
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="@ThemeManager.CorporateTheme" />
 <MudPopoverProvider />
 
 @* Needed for dialogs *@
@@ -22,7 +22,13 @@
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h6"><MudButton Variant="Variant.Text" Color="Color.Inherit">Risk Reporting</MudButton></MudText>
         <MudSpacer />
-        <MudIconButton Icon="@themeIcon" Color="Color.Inherit" OnClick="ToggleThemeMode" Class="mr-3" />
+        <!-- The Smooth Dark Mode Toggle Switch -->
+        <MudTooltip Text="@(_isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">
+            <MudIconButton Icon="@(_isDarkMode? Icons.Material.Filled.WbSunny : Icons.Material.Filled.NightsStay)"
+                           Color="Color.Inherit"
+                           OnClick="@ToggleDarkMode"
+                           Class="dark-mode-toggle-btn" />
+        </MudTooltip>
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Target="_blank" />
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="6">
@@ -35,20 +41,53 @@
     </MudMainContent>
 </MudLayout>
 
+@* <MudLayout>
+    <!-- Top Header Glass AppBar -->
+    <MudAppBar Elevation="0">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudText Typo="Typo.h6" Class="ml-3">SMBC Portal</MudText>
+        <MudSpacer />
+
+        <!-- The Smooth Dark Mode Toggle Switch -->
+        <MudTooltip Text="@(_isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">
+            <MudIconButton Icon="@(_isDarkMode? Icons.Material.Filled.WbSunny : Icons.Material.Filled.NightsStay)"
+                           Color="Color.Inherit"
+                           OnClick="@ToggleDarkMode"
+                           Class="dark-mode-toggle-btn" />
+        </MudTooltip>
+    </MudAppBar>
+
+    <!-- Sidebar Glass Navigation Drawer -->
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0">
+        <MudNavMenu>
+            <MudNavLink Match="NavLinkMatch.All" href="/" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+            <MudNavLink href="/analytics" Icon="@Icons.Material.Filled.Analytics">Analytics</MudNavLink>
+            <MudNavLink href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <!-- Main Content Body Area -->
+    <MudMainContent Class="pa-6">
+        @Body
+    </MudMainContent>
+</MudLayout> *@
 
 @code {
-    bool _drawerOpen = true;
-    bool isDarkMode = false;
-    string themeIcon = Icons.Material.Filled.DarkMode;
+    private bool _drawerOpen = true;
+    private bool _isDarkMode = false;
+    private MudThemeProvider _mudThemeProvider = default!;
 
-    void ToggleThemeMode()
-    {
-        isDarkMode = !isDarkMode;
-    }
 
-    void DrawerToggle()
+    private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
+
+    private void ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+
+    
 }
 

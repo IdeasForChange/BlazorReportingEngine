@@ -1,3 +1,10 @@
+body {
+    /*background-color: #f4f6f5;*/
+    /* Soft, out-of-focus background shapes that pop through the glass panels */
+    background-image: radial-gradient(at 0% 0%, rgba(182, 207, 72, 0.12) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0, 94, 68, 0.08) 0px, transparent 50%);
+    background-attachment: fixed;
+}
+
 /*
     Adds a Frosted Glass Theme
 */
@@ -8,3 +15,94 @@
     backdrop-filter: blur(5px) contrast(1.5) saturate(2) blur(10px) brightness(1.5) blur(20px);
     -webkit-backdrop-filter: blur(5px) contrast(1.5) saturate(2) blur(10px) brightness(1.5) blur(20px);
 }
+
+/* Apply frosted glass blur and reflections globally to MudBlazor surfaces */
+.mud-paper, .mud-card, .mud-dialog {
+    backdrop-filter: blur(16px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 94, 68, 0.05) !important;
+}
+
+/* Glassmorphic Header Override */
+.mud-appbar {
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Glassmorphic Navigation Drawer Override */
+.mud-drawer {
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Nav Link Hover & Active interactions styled for Glass UI */
+.mud-nav-link:hover {
+    background-color: rgba(182, 207, 72, 0.15) !important; /* Fresh Green blend tint */
+    color: #005E44 !important;
+}
+
+    .mud-nav-link:hover .mud-nav-link-icon {
+        color: #005E44 !important;
+    }
+
+.mud-nav-link.active {
+    background-color: rgba(0, 94, 68, 0.12) !important; /* Trad Green selection block */
+    border-left: 4px solid #005E44;
+    color: #005E44 !important;
+    font-weight: 900;
+}
+
+/* --- Dark Mode Glass Enhancements --- */
+.mud-theme-dark .mud-paper,
+.mud-theme-dark .mud-card,
+.mud-theme-dark .mud-drawer {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+}
+
+.mud-theme-dark .mud-nav-link:hover {
+    background-color: rgba(182, 207, 72, 0.2) !important;
+    color: #B6CF48 !important;
+    color: #FFFFFF !important;
+}
+
+    .mud-theme-dark .mud-nav-link-icon {
+        color: #B6CF48 !important;
+    }
+
+.mud-theme-dark .mud-nav-link.active {
+    background-color: rgba(182, 207, 72, 0.15) !important;
+    border-left: 4px solid #B6CF48;
+    /*color: #B6CF48 !important;*/
+}
+
+/* Smoothly fade colors over 0.4 seconds during dark-mode toggle toggles */
+/*body, .mud-layout, .mud-paper, .mud-card, .mud-drawer, .mud-appbar, .mud-typography {
+    transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.3s ease, border-color 0.4s ease, box-shadow 0.4s ease !important;
+}
+*/
+/* Base Body Gradient: Adapts dynamically based on light/dark mode */
+/*body {
+    background-color: #f4f6f5;
+    background-image: radial-gradient(at 0% 0%, rgba(182, 207, 72, 0.12) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0, 94, 68, 0.08) 0px, transparent 50%);
+    background-attachment: fixed;
+}*/
+
+/* Dark mode shifting mesh variant */
+/*.mud-theme-dark body {
+    background-color: #090e0c;
+    background-image: radial-gradient(at 0% 0%, rgba(16, 122, 94, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(182, 207, 72, 0.05) 0px, transparent 50%);
+}*/
+
+/* Spin animation for the toggle icon to add polish */
+.dark-mode-toggle-btn {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+    .dark-mode-toggle-btn:active {
+        transform: rotate(180deg);
+    }
