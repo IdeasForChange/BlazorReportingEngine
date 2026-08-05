@@ -22,7 +22,7 @@ public class ThemeManager
             TextPrimary = "#1A2521",
             TextSecondary = "#55635E",
 
-            AppbarBackground = "rgba(0, 94, 68, 0.75)", // Deep Trad Green glass header
+            AppbarBackground = "#198754", // "rgba(25, 135, 84, 0.75)", // Deep Trad Green glass header
             AppbarText = "#FFFFFF",
             DrawerBackground = "rgba(255, 255, 255, 0.5)", // Sidebar glass
             DrawerText = "#1A2521",
@@ -44,7 +44,7 @@ public class ThemeManager
             TextPrimary = "#ECF2F0",
             TextSecondary = "#A3B3AE",
 
-            AppbarBackground = "rgba(16, 122, 94, 0.65)",
+            AppbarBackground = "#198754", // "rgba(25, 135, 84, 0.65)",
             AppbarText = "#FFFFFF",
             DrawerBackground = "rgba(21, 30, 27, 0.6)",
             DrawerText = "#ECF2F0",

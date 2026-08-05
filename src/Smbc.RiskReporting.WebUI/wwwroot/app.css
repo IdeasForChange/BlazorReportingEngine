@@ -1,3 +1,8 @@
+:root {
+    --bs-green: #198754;
+    --bs-teal: #20c997;
+}
+
 body {
     /*background-color: #f4f6f5;*/
     /* Soft, out-of-focus background shapes that pop through the glass panels */
@@ -5,9 +10,17 @@ body {
     background-attachment: fixed;
 }
 
-/*
-    Adds a Frosted Glass Theme
-*/
+.page-title {
+    /*text-shadow: 2px 2px #005E44;*/
+    font-size: 52px;
+    line-height: 1.16;
+    letter-spacing: -.003em;
+    font-family: "Inter LT Std";
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* Adds a Frosted Glass Theme */
 .mud-appbar,
 .mud-dialog,
 .mud-popover,
