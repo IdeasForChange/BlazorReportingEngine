@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Smbc.Risk.ReportingEngine.Application</AssemblyName>
+    <RootNamespace>Smbc.Risk.ReportingEngine.Application</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Application\Core.Application.csproj" />
+    <ProjectReference Include="..\ReportingEngine.Domain.Shared\ReportingEngine.Domain.Shared.csproj" />
+    <ProjectReference Include="..\ReportingEngine.Domain\ReportingEngine.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
+</Project>

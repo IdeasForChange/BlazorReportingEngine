@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Smbc.Risk.ReportingEngine.Domain</AssemblyName>
+    <RootNamespace>Smbc.Risk.ReportingEngine.Domain</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReportingEngine.Domain.Shared\ReportingEngine.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

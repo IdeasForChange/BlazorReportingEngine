@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <AssemblyName>Smbc.Risk.ReportingEngine.WebUI</AssemblyName>
+    <RootNamespace>Smbc.Risk.ReportingEngine.WebUI</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fluxor.Blazor.Web" Version="6.11.0" />
+    <PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="6.11.0" />
+    <PackageReference Include="MudBlazor" Version="9.7.0" />
+  </ItemGroup>
+
+</Project>
