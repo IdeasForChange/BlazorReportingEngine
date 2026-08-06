@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Smbc.ReportingEngine.Domain.Shared\Smbc.ReportingEngine.Domain.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
