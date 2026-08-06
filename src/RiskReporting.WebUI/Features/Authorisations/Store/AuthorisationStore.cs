@@ -2,7 +2,6 @@
 
 namespace Smbc.Risk.ReportingEngine.WebUI.Features.Authorisations.Store;
 
-[FeatureState]
 public record UserState
 {
     public bool IsLoading { get; init; }
