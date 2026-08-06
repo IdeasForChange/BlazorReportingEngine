@@ -1,8 +1,7 @@
 ﻿namespace Smbc.ReportingEngine.Domain.Entities;
 
-public class EnvironmentConfig
+public class EnvironmentConfig : BaseEntity
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty; // e.g., "DEV", "SIT", "UAT", "PROD"
+    public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 }

@@ -1,6 +1,6 @@
 ﻿using Smbc.ReportingEngine.Domain.Shared.Enums;
 
-namespace Smbc.ReportingEngine.Domain.Shared.Repositories;
+namespace Smbc.ReportingEngine.Domain.Repositories;
 
 public interface IDatabaseConnectionValidator
 {
