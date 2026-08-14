@@ -9,13 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core.Application\Core.Application.csproj" />
-    <ProjectReference Include="..\ReportingEngine.Domain.Shared\ReportingEngine.Domain.Shared.csproj" />
-    <ProjectReference Include="..\ReportingEngine.Domain\ReportingEngine.Domain.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\Core.Application\Core.Application.csproj" />
+    <ProjectReference Include="..\ReportingEngine.Domain.Shared\ReportingEngine.Domain.Shared.csproj" />
+    <ProjectReference Include="..\ReportingEngine.Domain\ReportingEngine.Domain.csproj" />
   </ItemGroup>
 
 </Project>

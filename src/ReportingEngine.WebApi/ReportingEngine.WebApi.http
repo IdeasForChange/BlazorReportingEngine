@@ -1,6 +1,6 @@
 @Smbc.ReportingEngine.WebApi_HostAddress = http://localhost:5007
 
-GET {{Smbc.ReportingEngine.WebApi_HostAddress}}/weatherforecast/
+GET {{Smbc.ReportingEngine.WebApi_HostAddress}}/SystemParameterTypes/
 Accept: application/json
 
 ###
