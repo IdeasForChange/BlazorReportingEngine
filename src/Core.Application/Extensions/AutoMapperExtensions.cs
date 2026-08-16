@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 
-namespace Smbc.Risk.Core.Application;
+namespace Smbc.Risk.Core.Application.Extensions;
 
 public static class AutoMapperExtensions
 {

@@ -3,6 +3,6 @@ using Smbc.Risk.ReportingEngine.Domain.Entities;
 
 namespace Smbc.Risk.ReportingEngine.Domain.Repositories;
 
-internal interface IReportTemplateService : IBaseRepository<ReportTemplate>
+public interface IReportMetricRepository : IBaseRepository<ReportMetric>
 {
 }

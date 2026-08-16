@@ -1,4 +1,4 @@
-﻿using Smbc.ReportingEngine.Domain.Shared.Enums;
+﻿using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 
 namespace Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
 

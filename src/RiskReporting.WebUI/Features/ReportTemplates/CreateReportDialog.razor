@@ -1,0 +1,41 @@
+﻿@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="model.Name" Label="Report Name" Required="true" />
+        <MudTextField @bind-Value="model.Description" Label="Description" />
+        <MudTextField @bind-Value="model.OutputDirectory" Label="Output Directory" Required="true" />
+        <MudTextField @bind-Value="model.FileNamePattern" Label="FileName Pattern (e.g. Sales_{YYYY}.xlsx)" Required="true" />
+        
+        <MudFileUpload T="IBrowserFile" OnFilesChanged="UploadFile" Class="mt-4"
+                       Accept=".xlsx"
+                       Disabled="@string.IsNullOrWhiteSpace(model.Name)">
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                @(selectedFile == null ? "Upload Excel File" : selectedFile.Name)
+            </MudButton>
+        </MudFileUpload>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@(selectedFile == null)">Create Report</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Inject] HttpClient Http { get; set; } = default!;
+
+    private CreateReportTemplateRequest model = new();
+    private IBrowserFile? selectedFile;
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        using var memoryStream = new MemoryStream();
+        await selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream);
+        model.FileBytes = memoryStream.ToArray();
+        model.FileName = selectedFile.Name;
+    }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(model));
+    private void Cancel() => MudDialog.Cancel();
+}

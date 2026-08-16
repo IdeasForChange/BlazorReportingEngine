@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Smbc.Risk.Core.Application.Services;
 using Smbc.Risk.ReportingEngine.Application.Services;
 using Smbc.Risk.ReportingEngine.Domain.Services;
 using System.Runtime.CompilerServices;
@@ -24,6 +25,8 @@ public static class ServiceRegistration
 
         // Configure all service dependencies
         services.AddScoped<ISystemParameterTypeService, SystemParameterTypeService>();
+        services.AddScoped<IExcelParserService, ExcelParserService>();
+        services.AddScoped<IReportTemplateService, ReportTemplateService>();
 
         return services;
     }

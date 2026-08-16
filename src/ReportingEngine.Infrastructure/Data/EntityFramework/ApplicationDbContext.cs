@@ -42,6 +42,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         base.OnModelCreating(modelBuilder);
 
+        // Sets default schema for all tables mapped in this DbContext
+        modelBuilder.HasDefaultSchema("Reporting");
+
         // Apply all configurations
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }

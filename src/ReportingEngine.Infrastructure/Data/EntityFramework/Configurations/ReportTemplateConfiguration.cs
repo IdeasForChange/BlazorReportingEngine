@@ -8,39 +8,31 @@ public class ReportTemplateConfiguration : IEntityTypeConfiguration<ReportTempla
 {
     public void Configure(EntityTypeBuilder<ReportTemplate> builder)
     {
-        builder.ToTable("ReportTemplates");
+        // Set Schema and Table Name
+        builder.ToTable("ReportTemplate");
 
-        builder.HasKey(t => t.Id);
+        builder.HasKey(e => e.Id);
 
-        builder.Property(t => t.Name)
-            .IsRequired()
-            .HasMaxLength(200);
+        builder.Property(e => e.Name).IsRequired().HasMaxLength(255);
+        builder.Property(e => e.FilePath).IsRequired().HasMaxLength(1000);
+        builder.Property(e => e.OutputDirectory).IsRequired().HasMaxLength(1000);
+        builder.Property(e => e.FileNamePattern).IsRequired().HasMaxLength(255);
+        builder.Property(e => e.CreatedBy).HasMaxLength(256);
+        builder.Property(e => e.UpdatedBy).HasMaxLength(256);
 
-        builder.Property(t => t.Description)
-            .HasMaxLength(1000);
-
-        builder.Property(t => t.FilePath)
-            .IsRequired()
-            .HasMaxLength(500);
-
-        builder.Property(t => t.OutputDirectory)
-            .IsRequired()
-            .HasMaxLength(500);
-
-        builder.Property(t => t.FileNamePattern)
-            .IsRequired()
-            .HasMaxLength(200);
-
-        // One-To-Many: ReportTemplate -> ReportMetrics
-        builder.HasMany(t => t.Metrics)
-            .WithOne(m => m.ReportTemplate)
-            .HasForeignKey(m => m.ReportTemplateId)
+        builder.HasMany(e => e.Metrics)
+            .WithOne(e => e.ReportTemplate)
+            .HasForeignKey(e => e.ReportTemplateId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // One-To-Many: ReportTemplate -> ReportParameters
-        builder.HasMany(t => t.Parameters)
-            .WithOne(p => p.ReportTemplate)
-            .HasForeignKey(p => p.ReportTemplateId)
+        builder.HasMany(e => e.Parameters)
+            .WithOne(e => e.ReportTemplate)
+            .HasForeignKey(e => e.ReportTemplateId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(e => e.QueueItems)
+            .WithOne(e => e.ReportTemplate)
+            .HasForeignKey(e => e.ReportTemplateId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

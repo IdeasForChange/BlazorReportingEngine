@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Smbc.ReportingEngine.Domain.Shared.Enums;
 using Smbc.Risk.ReportingEngine.Application.Interfaces;
 using Smbc.Risk.ReportingEngine.Domain.Repositories;
-using Smbc.Risk.ReportingEngine.Infrastructure.BackgroundWorkers;
+using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 using Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework;
 using Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
 using Smbc.Risk.ReportingEngine.Infrastructure.Services;
@@ -34,9 +33,12 @@ public static class ServiceRegistration
         // Configure BASE dependencies
         services.AddScoped<ISystemParameterTypeRepository, SystemParameterTypeRepository>(); 
         services.AddTransient<IDynamicQueryExecutor, DynamicQueryExecutor>();
+        services.AddTransient<IReportParameterRepository, ReportParameterRepository>();
+        services.AddTransient<IReportMetricRepository, ReportMetricRepository>();
+        services.AddTransient<IReportTemplateRepository, ReportTemplateRepository>();
 
         // 4. Background Multi-Threaded Execution Engine
-        services.AddHostedService<ReportRunnerWorker>();
+        //services.AddHostedService<ReportRunnerWorker>();
 
         return services;
     }

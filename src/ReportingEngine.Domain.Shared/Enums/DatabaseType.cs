@@ -1,4 +1,4 @@
-﻿namespace Smbc.ReportingEngine.Domain.Shared.Enums;
+﻿namespace Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 
 public enum DatabaseType
 {

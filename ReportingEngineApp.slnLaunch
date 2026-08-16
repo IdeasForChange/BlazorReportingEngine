@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "WebUI & WebAPI",
+    "Projects": [
+      {
+        "Path": "src\\ReportingEngine.WebApi\\ReportingEngine.WebApi.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\RiskReporting.WebUI\\RiskReporting.WebUI.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

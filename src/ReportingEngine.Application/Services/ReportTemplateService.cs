@@ -1,77 +1,89 @@
 ﻿using AutoMapper;
+using Smbc.Risk.Core.Application.Services;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
+using Smbc.Risk.ReportingEngine.Domain.Repositories;
 using Smbc.Risk.ReportingEngine.Domain.Services;
 using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 
 namespace Smbc.Risk.ReportingEngine.Application.Services;
 
-public class ReportTemplateService(IReportTemplateService repository, IMapper mapper) : IReportTemplateService
+public class ReportTemplateService(
+    IReportTemplateRepository templateRepository,
+    IReportParameterRepository parameterRepository,
+    IReportMetricRepository metricRepository,
+    IExcelParserService excelParserService,
+    IMapper mapper) : IReportTemplateService
 {
-    private readonly IReportTemplateService _repository = repository;
+    private readonly IReportTemplateRepository _templateRepository = templateRepository;
+    private readonly IReportParameterRepository _parameterRepository = parameterRepository;
+    private readonly IReportMetricRepository _metricRepository = metricRepository;
+    private readonly IExcelParserService _excelParserService = excelParserService;
     private readonly IMapper _mapper = mapper;
 
-    public async Task<IEnumerable<ReportTemplateDto>> GetAllAsync() =>
-        _mapper.Map<IEnumerable<ReportTemplateDto>>(await _repository.GetAll());
-
-    public async Task<ReportTemplateDto?> GetByIdAsync(long id) =>
-        _mapper.Map<ReportTemplateDto>(await _repository.GetById(id));
-
-    public async Task<ReportTemplateDto> CreateAsync(ReportTemplateDto dto)
+    public async Task<IEnumerable<ReportTemplateDto>> GetAllReportsAsync(CancellationToken cancellationToken = default)
     {
-        var created = await _repository.Create(dto);
-        return _mapper.Map<ReportTemplateDto>(created);
+        var reports = await _templateRepository.GetAllAsync();
+        return _mapper.Map<IEnumerable<ReportTemplateDto>>(reports);
     }
 
-    public async Task UpdateAsync(ReportTemplateDto dto)
+    public async Task<ReportTemplateDto?> GetReportByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        await _repository.Update(dto);
+        var report = await _templateRepository.GetByIdAsync(id, cancellationToken);
+        return _mapper.Map<ReportTemplateDto>(report);
     }
 
-    //public async Task DeleteAsync(long id) => await _repository.Delete(id);
-
-    public Task<ReportTemplateDto?> GetById(long id, CancellationToken cancellationToken = default)
+    public async Task<ReportTemplateDto> CreateReportWithTemplateAsync(CreateReportTemplateRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        // 1. Save file locally or to storage path
+        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+        Directory.CreateDirectory(uploadDir);
+        var filePath = Path.Combine(uploadDir, $"{Guid.NewGuid()}_{request.FileName}");
+        await File.WriteAllBytesAsync(filePath, request.FileBytes);
+
+        // 2. Parse Named Ranges from Excel
+        using var stream = new MemoryStream(request.FileBytes);
+        var namedRanges = _excelParserService.ExtractNamedRanges(stream);
+
+        // 3. Construct Entity & Metrics
+        var report = new ReportTemplate
+        {
+            Name = request.Name,
+            Description = request.Description,
+            OutputDirectory = request.OutputDirectory,
+            FileNamePattern = request.FileNamePattern,
+            FilePath = filePath,
+            Metrics = namedRanges.Select(nr => new ReportMetric
+            {
+                NamedRange = nr,
+                DatabaseType = DatabaseType.SqlServer
+            }).ToList()
+        };
+
+        await _templateRepository.AddAsync(report, cancellationToken);
+        return _mapper.Map<ReportTemplateDto>(report);
     }
 
-    public Task<IEnumerable<ReportTemplateDto>> GetAll(CancellationToken cancellationToken = default)
+    public async Task UpdateMetricAsync(ReportMetricDto metricDto, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var metric = await _metricRepository.GetByIdAsync(metricDto.Id, cancellationToken);
+        if (metric is null) return;
+
+        metric.SqlQuery = metricDto.SqlQuery;
+        metric.DatabaseType = metricDto.DatabaseType;
+        metric.MaxRows = metricDto.MaxRows;
+
+        await _metricRepository.UpdateAsync(metric, cancellationToken);
     }
 
-    public Task<ReportTemplateDto> Create(ReportTemplateDto entity, CancellationToken cancellationToken = default)
+    public async Task AddParameterAsync(ReportParameterDto parameterDto, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var parameter = _mapper.Map<ReportParameter>(parameterDto);
+        await _parameterRepository.AddAsync(parameter, cancellationToken);
     }
 
-    public Task<ReportTemplateDto> Update(ReportTemplateDto entity, CancellationToken cancellationToken = default)
+    public async Task DeleteReportAsync(long id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> Delete(ReportTemplateDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<ReportTemplateDto>> Find(Expression<Func<ReportTemplateDto, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> Exists(long id, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<int> Count(CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
+        await _templateRepository.DeleteAsync(id, cancellationToken);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
-using Smbc.ReportingEngine.Domain.Entities;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
 using Smbc.Risk.ReportingEngine.Domain.Repositories;
 using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
@@ -8,7 +7,7 @@ using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
 
 internal class ReportTemplateRepository(ApplicationDbContext dbContext) 
-    : BaseRepository<SystemParameterType>(dbContext), IReportTemplateRepository
+    : BaseRepository<ReportTemplate>(dbContext), IReportTemplateRepository
 {
     public async Task<long> UploadTemplateAsync(
         string name,
@@ -82,10 +81,5 @@ internal class ReportTemplateRepository(ApplicationDbContext dbContext)
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return template.Id;
-    }
-
-    public override async Task<bool> Exists(long id, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.ReportTemplates.AnyAsync(e => e.Id == id, cancellationToken);
     }
 }

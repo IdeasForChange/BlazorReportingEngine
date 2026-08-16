@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-using Smbc.ReportingEngine.Domain.Shared.Enums;
 using Smbc.Risk.ReportingEngine.Application.Interfaces;
+using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 using System.Data;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Services;

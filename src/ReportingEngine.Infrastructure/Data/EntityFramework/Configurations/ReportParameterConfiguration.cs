@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Configurations;
 
@@ -13,19 +8,12 @@ public class ReportParameterConfiguration : IEntityTypeConfiguration<ReportParam
 {
     public void Configure(EntityTypeBuilder<ReportParameter> builder)
     {
-        builder.ToTable("ReportParameters");
+        builder.ToTable("ReportParameter");
 
-        builder.HasKey(p => p.Id);
+        builder.HasKey(e => e.Id);
+        builder.Property(e => e.Name).IsRequired().HasMaxLength(255);
+        builder.Property(e => e.Type).HasConversion<int>().IsRequired();
 
-        builder.Property(p => p.Name)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        builder.Property(p => p.Type)
-            .HasConversion<int>()
-            .IsRequired();
-
-        builder.Property(p => p.IsRequired)
-            .IsRequired();
+        builder.HasIndex(e => e.ReportTemplateId);
     }
 }

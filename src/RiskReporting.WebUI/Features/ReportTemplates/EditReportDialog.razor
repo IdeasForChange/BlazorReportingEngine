@@ -1,0 +1,114 @@
+﻿@using Smbc.Risk.ReportingEngine.WebUI.Features.ReportTemplates.Store
+@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+@using Smbc.Risk.ReportingEngine.Domain.Shared.Enums
+
+@inject IState<ReportTemplateState> ReportTemplateState
+@inject IDispatcher Dispatcher
+@inject HttpClient Http
+
+<MudDialog>
+    <DialogContent>
+        @if (ReportTemplateState.Value.SelectedReportTemplate != null)
+        {
+            var report = ReportTemplateState.Value.SelectedReportTemplate;
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true">
+
+                <!-- NAMED RANGES CONFIGURATION -->
+                <MudTabPanel Text="Named Range SQL Mappings">
+                    <MudTable Items="report.Metrics" Dense="true" Hover="true">
+                        <HeaderContent>
+                            <MudTh>Named Range</MudTh>
+                            <MudTh>Database Engine</MudTh>
+                            <MudTh>Max Rows</MudTh>
+                            <MudTh>SQL Query</MudTh>
+                            <MudTh>Save</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.NamedRange</MudTd>
+                            <MudTd>
+                                <MudSelect @bind-Value="context.DatabaseType" Dense="true" T="DatabaseType">
+                                    @foreach (DatabaseType db in Enum.GetValues(typeof(DatabaseType)))
+                                    {
+                                        <MudSelectItem Value="db">@db</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudTd>
+                            <MudTd>
+                                <MudNumericField @bind-Value="context.MaxRows" Placeholder="ALL" Clearable="true" />
+                            </MudTd>
+                            <MudTd>
+                                <MudTextField @bind-Value="context.SqlQuery" Lines="5" Placeholder="SELECT * FROM Table" />
+                            </MudTd>
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Save" Color="Color.Success" OnClick="() => SaveMetric(context)" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTabPanel>
+
+                <!-- PARAMETERS CONFIGURATION -->
+                <MudTabPanel Text="Initial Parameters">
+                    <MudGrid Class="mt-2">
+                        <MudItem xs="4">
+                            <MudTextField @bind-Value="newParam.Name" Label="Parameter Name" />
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudSelect @bind-Value="newParam.Type" Label="Type" T="ParameterType">
+                                @foreach (ParameterType p in Enum.GetValues(typeof(ParameterType)))
+                                {
+                                    <MudSelectItem Value="p">@p</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudCheckBox @bind-Value="newParam.IsRequired" Label="Required?" Color="Color.Primary" />
+                        </MudItem>
+                        <MudItem xs="2">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddParameter" Class="mt-2">Add</MudButton>
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudList T="string" Class="mt-4">
+                        @foreach (var param in report.Parameters)
+                        {
+                            <MudListItem Icon="@Icons.Material.Filled.Paragliding">
+                                <strong>@param.Name</strong> (@param.Type) - @(param.IsRequired ? "Required" : "Optional")
+                            </MudListItem>
+                        }
+                    </MudList>
+                </MudTabPanel>
+            </MudTabs>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public long ReportId { get; set; }
+
+    private ReportParameterDto newParam = new();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Dispatcher.Dispatch(new SelectReportAction(ReportId));
+    }
+
+    private async Task SaveMetric(ReportMetricDto metric)
+    {
+        await Http.PutAsJsonAsync($"api/ReportTemplates/metrics/{metric.Id}", metric);
+    }
+
+    private async Task AddParameter()
+    {
+        newParam.ReportTemplateId = ReportId;
+        await Http.PostAsJsonAsync("api/ReportTemplates/parameters", newParam);
+        newParam = new ReportParameterDto();
+        Dispatcher.Dispatch(new SelectReportAction(ReportId)); // Refresh UI
+    }
+
+    private void Close() => MudDialog.Close();
+}
