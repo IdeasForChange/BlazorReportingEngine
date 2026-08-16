@@ -2,9 +2,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Smbc.ReportingEngine.Domain.Shared.Enums;
+using Smbc.Risk.ReportingEngine.Application.Interfaces;
 using Smbc.Risk.ReportingEngine.Domain.Repositories;
+using Smbc.Risk.ReportingEngine.Infrastructure.BackgroundWorkers;
 using Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework;
 using Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
+using Smbc.Risk.ReportingEngine.Infrastructure.Services;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure;
 
@@ -12,7 +15,7 @@ public static class ServiceRegistration
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        string provider = configuration["DatabaseProvider"] ?? DatabaseProvider.SqlServer.ToString();
+        string provider = configuration["DatabaseProvider"] ?? DatabaseType.SqlServer.ToString();
         string connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found!");
 
@@ -29,7 +32,11 @@ public static class ServiceRegistration
         });
 
         // Configure BASE dependencies
-        services.AddScoped<ISystemParameterTypeRepository, SystemParameterTypeRepository>();
+        services.AddScoped<ISystemParameterTypeRepository, SystemParameterTypeRepository>(); 
+        services.AddTransient<IDynamicQueryExecutor, DynamicQueryExecutor>();
+
+        // 4. Background Multi-Threaded Execution Engine
+        services.AddHostedService<ReportRunnerWorker>();
 
         return services;
     }

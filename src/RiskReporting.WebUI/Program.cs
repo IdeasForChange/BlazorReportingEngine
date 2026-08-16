@@ -1,5 +1,6 @@
 using Fluxor;
 using Fluxor.Blazor.Web.ReduxDevTools;
+using MudBlazor;
 using MudBlazor.Services;
 
 namespace Smbc.Risk.ReportingEngine.WebUI;
@@ -16,6 +17,14 @@ public class Program
 
         // Add MudBlazor Services
         builder.Services.AddMudServices();
+        builder.Services.AddMudServices(config =>
+        {
+            config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
+            config.SnackbarConfiguration.PreventDuplicates = false;
+            config.SnackbarConfiguration.NewestOnTop = false;
+            config.SnackbarConfiguration.ShowCloseIcon = true;
+            config.SnackbarConfiguration.VisibleStateDuration = 4000;
+        });
 
         // Add Fluxor State Management 
         builder.Services.AddFluxor(o =>
@@ -23,6 +32,8 @@ public class Program
             o.ScanAssemblies(typeof(Program).Assembly);
             o.UseReduxDevTools();
         });
+
+        builder.Services.AddHttpClient();
 
         var app = builder.Build();
 

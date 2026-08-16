@@ -9,11 +9,11 @@ public class SystemParameterTypeRepository(ApplicationDbContext dbContext)
 {
     public override async Task<bool> Exists(long id, CancellationToken cancellationToken = default)
     {
-        return await dbContext.SystemParameterTypes.AnyAsync(e => e.Id == id, cancellationToken);
+        return await _dbContext.SystemParameterTypes.AnyAsync(e => e.Id == id, cancellationToken);
     }
 
     public async Task<bool> ExistsByCode(string code, long? excludeId = null, CancellationToken cancellationToken = default)
     {
-        return await dbContext.SystemParameterTypes.AnyAsync(e => e.Code == code && (!excludeId.HasValue || e.Id != excludeId.Value), cancellationToken);
+        return await _dbContext.SystemParameterTypes.AnyAsync(e => e.Code == code && (!excludeId.HasValue || e.Id != excludeId.Value), cancellationToken);
     }
 }

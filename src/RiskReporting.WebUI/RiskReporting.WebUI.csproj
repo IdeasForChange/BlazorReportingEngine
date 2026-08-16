@@ -14,4 +14,8 @@
     <PackageReference Include="MudBlazor" Version="9.7.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ReportingEngine.Domain.Shared\ReportingEngine.Domain.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

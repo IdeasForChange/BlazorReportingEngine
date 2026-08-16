@@ -12,8 +12,4 @@
     <ProjectReference Include="..\ReportingEngine.Domain.Shared\ReportingEngine.Domain.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="NewFolder\" />
-  </ItemGroup>
-
 </Project>

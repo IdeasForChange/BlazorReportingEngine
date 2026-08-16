@@ -1,0 +1,281 @@
+﻿@using MudBlazor
+@using Smbc.ReportingEngine.Domain.Shared.Enums
+@using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
+@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="@Template" OnValidSubmit="@Submit">
+            <DataAnnotationsValidator /> 
+            <MudTabs Rounded="true" ApplyEffectsToContainer="true" Class="pa-4">
+                
+                <!-- Tab 1: General Details -->
+                <MudTabPanel Text="General Details" Icon="@Icons.Material.Filled.Info">
+                    <MudGrid Class="mt-1">
+                        <MudItem xs="12" sm="8">
+                            <MudTextField @bind-Value="Template.Name" 
+                                          Label="Template Name" 
+                                          Required="true" 
+                                          RequiredError="Name is required" 
+                                          Variant="Variant.Outlined" 
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudNumericField @bind-Value="Template.Version" 
+                                             Label="Version" 
+                                             Min="1" 
+                                             Variant="Variant.Outlined" 
+                                             Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Template.Description" 
+                                          Label="Description" 
+                                          Lines="2" 
+                                          Variant="Variant.Outlined" 
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Template.FilePath" 
+                                          Label="File Path" 
+                                          Required="true" 
+                                          RequiredError="File path is required" 
+                                          Variant="Variant.Outlined" 
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Template.OutputDirectory" 
+                                          Label="Output Directory" 
+                                          Required="true" 
+                                          RequiredError="Output directory is required" 
+                                          Variant="Variant.Outlined" 
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="@Template.FileNamePattern" 
+                                          Label="File Name Pattern" 
+                                          HelperText="e.g. SalesReport_{yyyyMMdd}.xlsx" 
+                                          Required="true" 
+                                          RequiredError="FileNamePattern is required" 
+                                          Variant="Variant.Outlined" 
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+
+                <!-- Tab 2: Metrics -->
+                <MudTabPanel Text="Metrics" Icon="@Icons.Material.Filled.Analytics" BadgeData="@Template.Metrics.Count" BadgeColor="Color.Primary">
+                    <MudStack Spacing="3" Class="mt-1">
+                        <!-- Add Metric Section -->
+                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Add New Metric</MudText>
+                            <MudGrid>
+                                <MudItem xs="12" sm="4">
+                                    <MudTextField @bind-Value="newMetric.NamedRange" 
+                                                  Label="Named Range" 
+                                                  Variant="Variant.Outlined" 
+                                                  Margin="Margin.Dense" />
+                                </MudItem>
+                                <MudItem xs="12" sm="4">
+                                    <MudSelect T="DatabaseType" 
+                                               @bind-Value="newMetric.DatabaseType" 
+                                               Label="Database Type" 
+                                               Variant="Variant.Outlined" 
+                                               Margin="Margin.Dense">
+                                        @foreach (DatabaseType db in Enum.GetValues(typeof(DatabaseType)))
+                                        {
+                                            <MudSelectItem Value="@db">@db.ToString()</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" sm="4">
+                                    <MudNumericField @bind-Value="newMetric.MaxRows" 
+                                                     Label="Max Rows (empty = ALL)" 
+                                                     Clearable="true" 
+                                                     Variant="Variant.Outlined" 
+                                                     Margin="Margin.Dense" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="newMetric.SqlQuery" 
+                                                  Label="SQL Query" 
+                                                  Lines="3" 
+                                                  Variant="Variant.Outlined" 
+                                                  Margin="Margin.Dense" />
+                                </MudItem>
+                                <MudItem xs="12" Class="d-flex justify-end">
+                                    <MudButton Variant="Variant.Filled" 
+                                               Color="Color.Secondary" 
+                                               StartIcon="@Icons.Material.Filled.Add" 
+                                               OnClick="AddMetric" 
+                                               Disabled="@string.IsNullOrWhiteSpace(newMetric.NamedRange)">
+                                        Add Metric
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+
+                        <!-- Metrics List -->
+                        <MudTable Items="@Template.Metrics" Dense="true" Hover="true" Striped="true" Elevation="0" Outlined="true">
+                            <HeaderContent>
+                                <MudTh>Named Range</MudTh>
+                                <MudTh>DB Type</MudTh>
+                                <MudTh>Max Rows</MudTh>
+                                <MudTh>SQL Query</MudTh>
+                                <MudTh Style="width: 50px;"></MudTh>
+                            </HeaderContent>
+                            <RowTemplate Context="metric">
+                                <MudTd DataLabel="Named Range">@metric.NamedRange</MudTd>
+                                <MudTd DataLabel="DB Type">@metric.DatabaseType</MudTd>
+                                <MudTd DataLabel="Max Rows">@(metric.MaxRows.HasValue ? metric.MaxRows.Value.ToString() : "ALL")</MudTd>
+                                <MudTd DataLabel="SQL Query">
+                                    <MudText Typo="Typo.body2" Style="max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                                        @metric.SqlQuery
+                                    </MudText>
+                                </MudTd>
+                                <MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="() => RemoveMetric(metric)" />
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudStack>
+                </MudTabPanel>
+
+                <!-- Tab 3: Parameters -->
+                <MudTabPanel Text="Parameters" Icon="@Icons.Material.Filled.Tune" BadgeData="@Template.Parameters.Count" BadgeColor="Color.Primary">
+                    <MudStack Spacing="3" Class="mt-1">
+                        <!-- Add Parameter Section -->
+                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Add New Parameter</MudText>
+                            <MudGrid Style="align-items: center;">
+                                <MudItem xs="12" sm="5">
+                                    <MudTextField @bind-Value="newParameter.Name" 
+                                                  Label="Parameter Name" 
+                                                  Variant="Variant.Outlined" 
+                                                  Margin="Margin.Dense" />
+                                </MudItem>
+                                <MudItem xs="12" sm="4">
+                                    <MudSelect T="ParameterType"
+                                               @bind-Value="newParameter.Type" 
+                                               Label="Type" 
+                                               Variant="Variant.Outlined" 
+                                               Margin="Margin.Dense">
+                                        @foreach (ParameterType pType in Enum.GetValues(typeof(ParameterType)))
+                                        {
+                                            <MudSelectItem Value="@pType">@pType.ToString()</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="6" sm="3">
+                                    <MudCheckBox @bind-Value="newParameter.IsRequired" 
+                                                 Label="Required" 
+                                                 Color="Color.Primary" 
+                                                 Dense="true" />
+                                </MudItem>
+                                <MudItem xs="12" Class="d-flex justify-end">
+                                    <MudButton Variant="Variant.Filled" 
+                                               Color="Color.Secondary" 
+                                               StartIcon="@Icons.Material.Filled.Add" 
+                                               OnClick="AddParameter" 
+                                               Disabled="@string.IsNullOrWhiteSpace(newParameter.Name)">
+                                        Add Parameter
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+
+                        <MudTable Items="@Template.Parameters" Dense="true" Hover="true" Striped="true" Elevation="0" Outlined="true">
+                            <HeaderContent>
+                                <MudTh>Name</MudTh>
+                                <MudTh>Type</MudTh>
+                                <MudTh>Required</MudTh>
+                                <MudTh Style="width: 50px;"></MudTh>
+                            </HeaderContent>
+                            <RowTemplate Context="param">
+                                <MudTd DataLabel="Name">@param.Name</MudTd>
+                                <MudTd DataLabel="Type">@param.Type</MudTd>
+                                <MudTd DataLabel="Required">
+                                    <MudChip T="string" Color="@(param.IsRequired ? Color.Error : Color.Default)" Size="Size.Small">
+                                        @(param.IsRequired ? "Yes" : "No")
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="() => RemoveParameter(param)" />
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudStack>
+                </MudTabPanel>
+
+            </MudTabs>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Save Template</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public ReportTemplateDto? ExistingTemplate { get; set; }
+
+    private ReportTemplateDto Template { get; set; } = new();
+
+    private ReportMetricDto newMetric = new();
+    private ReportParameterDto newParameter = new();
+
+    protected override void OnInitialized()
+    {
+        if (ExistingTemplate != null)
+        {
+            // Deep copy to prevent mutating the state directly prior to submission
+            Template = ExistingTemplate with
+            {
+                Metrics = ExistingTemplate.Metrics.Select(m => m with { }).ToList(),
+                Parameters = ExistingTemplate.Parameters.Select(p => p with { }).ToList()
+            };
+        }
+    }
+
+    private void AddMetric()
+    {
+        if (string.IsNullOrWhiteSpace(newMetric.NamedRange)) return;
+
+        Template.Metrics.Add(newMetric);
+        newMetric = new ReportMetricDto();
+    }
+
+    private void RemoveMetric(ReportMetricDto metric)
+    {
+        Template.Metrics.Remove(metric);
+    }
+
+    private void AddParameter()
+    {
+        if (string.IsNullOrWhiteSpace(newParameter.Name)) return;
+
+        Template.Parameters.Add(newParameter);
+        newParameter = new ReportParameterDto();
+    }
+
+    private void RemoveParameter(ReportParameterDto parameter)
+    {
+        Template.Parameters.Remove(parameter);
+    }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(Template));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
