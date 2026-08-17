@@ -1,5 +1,11 @@
 ﻿@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+
 <MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.AddChart" Class="mr-3" /> Add Report Template
+        </MudText>
+    </TitleContent>
     <DialogContent>
         <MudTextField @bind-Value="model.Name" Label="Report Name" Required="true" />
         <MudTextField @bind-Value="model.Description" Label="Description" />
@@ -20,9 +26,35 @@
     </DialogActions>
 </MudDialog>
 
+<style>
+    .custom-class {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+    }
+
+    .blur {
+        backdrop-filter: blur(10px);
+    }
+
+    .dialog-background {
+        background-color: transparent;
+    }
+
+    .dialog-background-title {
+        background: rgba(var(--mud-palette-info-rgb), 0.5);
+        color: var(--mud-palette-white);
+    }
+
+    .dialog-background-surface {
+        background: rgba(var(--mud-palette-surface-rgb), 0.75);
+    }
+</style>
+
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Inject] HttpClient Http { get; set; } = default!;
+
+    private readonly DialogOptions _dialogOptions = new() { FullWidth = true, BackgroundClass = "custom-class" };
 
     private CreateReportTemplateRequest model = new();
     private IBrowserFile? selectedFile;

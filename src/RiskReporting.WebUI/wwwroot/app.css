@@ -119,3 +119,28 @@ body {
     .dark-mode-toggle-btn:active {
         transform: rotate(180deg);
     }
+
+/* Applies backdrop filter and transparent background to the dialog container */
+.mud-dialog-container .mud-dialog {
+    backdrop-filter: blur(10px);
+    background-color: transparent !important;
+}
+
+/* Styles the header/title section */
+.mud-dialog-container .mud-dialog-title {
+    backdrop-filter: blur(10px);
+    background: rgba(var(--mud-palette-info-rgb), 0.5);
+    color: var(--mud-palette-white);
+}
+
+/* Styles the content body and action buttons */
+.mud-dialog-container .mud-dialog-content,
+.mud-dialog-container .mud-dialog-actions {
+    background: rgba(var(--mud-palette-surface-rgb), 0.75);
+}
+
+/* Reproduces py-10 padding on content */
+.mud-dialog-container .mud-dialog-content {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+}

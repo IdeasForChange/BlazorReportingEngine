@@ -1,4 +1,6 @@
 ﻿@page "/report-templates"
+@inherits FluxorComponent
+
 @using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
 @using Smbc.Risk.ReportingEngine.WebUI.Features.ReportTemplates.Store
 
@@ -7,22 +9,24 @@
 @inject IDialogService DialogService
 
 
-<MudDataGrid @ref="_elementGrid" 
-    T="ReportTemplateDto" 
-             Items="@ReportTemplateState.Value.Templates"
-    Bordered="true" 
-    Dense="true"
-    Loading="@ReportTemplateState.Value.IsLoading"
-    Hover="true" 
-    Elevation="25"
-    EditTrigger="DataGridEditTrigger.OnRowClick">
+<MudDataGrid T="ReportTemplateDto" 
+             Loading="@ReportTemplateState.Value.IsLoading"
+             Items="@(ReportTemplateState.Value.Templates)"
+             Class="px-4"
+             Bordered="true"
+             Dense="true"
+             Hover="true"
+             Elevation="25"
+             FooterClass="d-flex"
+             EditTrigger="DataGridEditTrigger.OnRowClick">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Report Templates</MudText>
         <MudSpacer />
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreateDialog">Add New Report</MudButton>
     </ToolBarContent>
     <Columns>
-        <PropertyColumn Property="x => x.Name" Title="Nr" Editable="false" />
+        <HierarchyColumn T="ReportTemplateDto" />
+        <PropertyColumn Property="x => x.Name" Title="Name" Editable="false" />
         <PropertyColumn Property="x => x.FileNamePattern" />
         <PropertyColumn Property="x => x.Metrics.Count">
             <MudChip T="string" Color="Color.Info" Size="Size.Small">Ranges</MudChip>
@@ -32,45 +36,40 @@
                 <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.Item.Metrics?.Count Ranges</MudChip>
             </CellTemplate>
         </TemplateColumn>
+        <TemplateColumn CellClass="d-flex justify-between">
+            <CellTemplate>
+                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+               <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" />
+            </CellTemplate>
+        </TemplateColumn>
     </Columns>
+    <PagerContent>
+        <MudDataGridPager T="ReportTemplateDto" PageSizeOptions="new[] { 10, 20, 50, 100 }" />
+    </PagerContent>
 </MudDataGrid>
 
-@* <MudTable Items="ReportState.Value.Reports" Loading="ReportState.Value.IsLoading" Hover="true" Elevation="25">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Report Templates</MudText>
-        <MudSpacer />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreateDialog">Add New Report</MudButton>
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh>Name</MudTh>
-        <MudTh>Output Pattern</MudTh>
-        <MudTh>Named Ranges Found</MudTh>
-        <MudTh>Actions</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Name">@context.Name</MudTd>
-        <MudTd DataLabel="Output Pattern">@context.FileNamePattern</MudTd>
-        <MudTd DataLabel="Named Ranges">
-            <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.Metrics.Count Ranges</MudChip>
-        </MudTd>
-        <MudTd DataLabel="Actions">
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="() => ManageReport(context.Id)" />
-        </MudTd>
-    </RowTemplate>
-</MudTable> *@
+
+<style>
+    .custom-class {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+    }   
+</style>
+
 
 @code {
-    private MudDataGrid<ReportTemplateDto> _elementGrid = default!;
-
     protected override void OnInitialized()
     {
+        if(!ReportTemplateState.Value.Templates.Any())
+        {
+            Dispatcher.Dispatch(new LoadReportsAction());
+        }
         base.OnInitialized();
-        Dispatcher.Dispatch(new LoadReportsAction());
     }
 
     private async Task OpenCreateDialog()
     {
-        var dialog = await DialogService.ShowAsync<CreateReportDialog>("Upload Excel & Setup Report");
+        var dialog = await DialogService.ShowAsync<CreateReportDialog>();
         var result = await dialog.Result;
         if (result != null && !result.Canceled && result.Data is CreateReportTemplateRequest dto)
         {

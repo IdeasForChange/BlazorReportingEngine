@@ -80,19 +80,20 @@ public static class ReportReducers
 }
 
 // EFFECTS
-public class ReportEffects(HttpClient httpClient, ISnackbar snackbar)
+public class ReportEffects(HttpClient httpClient, IConfiguration configuration, ISnackbar snackbar)
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly ISnackbar _snackbar = snackbar;
-    private const string ApiEndpoint = "https://localhost:7105/api/ReportTemplates";
-
+    private string? apiEndpoint => configuration?.GetValue<string>("REPORTING_API");
 
     [EffectMethod]
     public async Task HandleLoadReports(LoadReportsAction action, IDispatcher dispatcher)
     {
         try
         {
-            var reports = await _httpClient.GetFromJsonAsync<List<ReportTemplateDto>>($"{ApiEndpoint}");
+            var url = $"{apiEndpoint}ReportTemplates";
+
+            var reports = await _httpClient.GetFromJsonAsync<List<ReportTemplateDto>>(url);
 
             dispatcher.Dispatch(new LoadReportsSuccessAction(reports!));
         }
@@ -112,7 +113,7 @@ public class ReportEffects(HttpClient httpClient, ISnackbar snackbar)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(ApiEndpoint, action.Template);
+            var response = await _httpClient.PostAsJsonAsync(apiEndpoint, action.Template);
             if (response.IsSuccessStatusCode)
             {
                 var created = await response.Content.ReadFromJsonAsync<ReportTemplateDto>();
@@ -137,7 +138,7 @@ public class ReportEffects(HttpClient httpClient, ISnackbar snackbar)
     [EffectMethod]
     public async Task HandleSelectReport(SelectReportAction action, IDispatcher dispatcher)
     {
-        var report = await _httpClient.GetFromJsonAsync<ReportTemplateDto>($"{ApiEndpoint}/{action.Id}");
+        var report = await _httpClient.GetFromJsonAsync<ReportTemplateDto>($"{apiEndpoint}/{action.Id}");
         if (report != null) dispatcher.Dispatch(new SelectReportSuccessAction(report));
     }
 }

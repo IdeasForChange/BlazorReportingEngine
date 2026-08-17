@@ -15,6 +15,8 @@ public class Program
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
 
+        builder.Services.AddHttpClient();
+
         // Add MudBlazor Services
         builder.Services.AddMudServices();
         builder.Services.AddMudServices(config =>
@@ -33,7 +35,7 @@ public class Program
             o.UseReduxDevTools();
         });
 
-        builder.Services.AddHttpClient();
+
 
         var app = builder.Build();
 

@@ -49,7 +49,8 @@ public class ThemeManager
             DrawerBackground = "rgba(21, 30, 27, 0.6)",
             DrawerText = "#ECF2F0",
             ActionDefault = "#A3B3AE"
-        }
+        },
+
     };
 } 
 
