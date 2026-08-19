@@ -12,11 +12,19 @@ public class ExcelParserService : IExcelParserService
         using var workbook = new XLWorkbook(fileStream);
         if(workbook != null && workbook.DefinedNames != null )
         {
-            result = workbook.DefinedNames
-            .Select(nr => nr.Name)
-            .Distinct()
-            .ToList();
+            result = workbook.Worksheets
+                .SelectMany(ws => ws.DefinedNames)
+                .Select(nr => nr.Name)
+                .Distinct()
+                .ToList();
+
+            //foreach (var wsNamedRange in workbook.Worksheets.SelectMany(ws => ws.DefinedNames))
+            //{
+            //    Console.WriteLine($"{wsNamedRange.Name} = {wsNamedRange.RefersTo}");
+            //}
         }
+
+
         return result;
     }
 }

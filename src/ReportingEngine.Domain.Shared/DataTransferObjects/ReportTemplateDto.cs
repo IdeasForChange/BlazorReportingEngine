@@ -18,4 +18,5 @@ public record ReportTemplateDto
     public bool IsActive { get; set; } = true;
     public List<ReportMetricDto> Metrics { get; set; } = [];
     public List<ReportParameterDto> Parameters { get; set; } = [];
+    public string? FileName => FilePath != null ? new FileInfo(FilePath)?.Name : null;
 }

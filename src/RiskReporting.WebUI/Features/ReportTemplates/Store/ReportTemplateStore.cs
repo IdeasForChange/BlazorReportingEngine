@@ -113,7 +113,9 @@ public class ReportEffects(HttpClient httpClient, IConfiguration configuration, 
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(apiEndpoint, action.Template);
+            var url = $"{apiEndpoint}ReportTemplates";
+
+            var response = await _httpClient.PostAsJsonAsync(url, action.Template);
             if (response.IsSuccessStatusCode)
             {
                 var created = await response.Content.ReadFromJsonAsync<ReportTemplateDto>();

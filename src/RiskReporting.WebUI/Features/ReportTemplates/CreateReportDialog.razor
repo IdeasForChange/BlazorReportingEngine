@@ -1,6 +1,9 @@
 ﻿@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
 
-<MudDialog>
+<MudDialog  Class="blur dialog-background" 
+            TitleClass="blur dialog-background-title" 
+            ContentClass="dialog-background-surface py-2" 
+            ActionsClass="dialog-background-surface">
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.AddChart" Class="mr-3" /> Add Report Template
@@ -9,8 +12,8 @@
     <DialogContent>
         <MudTextField @bind-Value="model.Name" Label="Report Name" Required="true" />
         <MudTextField @bind-Value="model.Description" Label="Description" />
-        <MudTextField @bind-Value="model.OutputDirectory" Label="Output Directory" Required="true" />
-        <MudTextField @bind-Value="model.FileNamePattern" Label="FileName Pattern (e.g. Sales_{YYYY}.xlsx)" Required="true" />
+        <MudTextField @bind-Value="model.OutputDirectory" Label="Report Directory" Required="true" />
+        <MudTextField @bind-Value="model.FileNamePattern" Label="Report Name Pattern (e.g. {YYYYMMDD}_MarketRisk_LimitUtilisation.xlsx)" Required="true" />
         
         <MudFileUpload T="IBrowserFile" OnFilesChanged="UploadFile" Class="mt-4"
                        Accept=".xlsx"

@@ -18,24 +18,24 @@
              Hover="true"
              Elevation="25"
              FooterClass="d-flex"
+             ShowMenuIcon="true"
+             Filterable="true"
              EditTrigger="DataGridEditTrigger.OnRowClick">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Report Templates</MudText>
         <MudSpacer />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreateDialog">Add New Report</MudButton>
+        <MudTooltip Text="Add New Template" Placement="Placement.Bottom" Inline="true">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Variant="Variant.Filled" aria-label="Add New Template" OnClick="OpenCreateDialog" />
+        </MudTooltip>
     </ToolBarContent>
     <Columns>
         <HierarchyColumn T="ReportTemplateDto" />
-        <PropertyColumn Property="x => x.Name" Title="Name" Editable="false" />
-        <PropertyColumn Property="x => x.FileNamePattern" />
+        <PropertyColumn Property="x => x.Name" Title="Template Name" Editable="false" />
+        <PropertyColumn Property="x => x.FileName" Title="Template File" Editable="false" />
         <PropertyColumn Property="x => x.Metrics.Count">
-            <MudChip T="string" Color="Color.Info" Size="Size.Small">Ranges</MudChip>
+            <MudChip T="string" Color="Color.Info" Size="Size.Small">Number of Metrics</MudChip>
         </PropertyColumn>
-        <TemplateColumn CellClass="d-flex justify-between">
-            <CellTemplate>
-                <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.Item.Metrics?.Count Ranges</MudChip>
-            </CellTemplate>
-        </TemplateColumn>
+        <PropertyColumn Property="x => x.FileNamePattern" Title="Report Output Pattern" />
         <TemplateColumn CellClass="d-flex justify-between">
             <CellTemplate>
                 <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
@@ -80,7 +80,7 @@
 
     private async Task ManageReport(long id)
     {
-        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, BackgroundClass = "mud-elevation-0" };
         var parameters = new DialogParameters { ["ReportId"] = id };
         await DialogService.ShowAsync<EditReportDialog>("Report Configuration", parameters, options);
     }
