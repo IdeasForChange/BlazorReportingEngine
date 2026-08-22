@@ -50,9 +50,9 @@ public class ReportTemplateService(
         {
             Name = request.Name,
             Description = request.Description,
-            OutputDirectory = request.OutputDirectory,
-            FileNamePattern = request.FileNamePattern,
-            FilePath = filePath,
+            ReportDirectory = request.ReportDirectory,
+            ReportNamePattern = request.ReportNamePattern,
+            TemplatePath = filePath,
             Metrics = namedRanges.Select(nr => new ReportMetric
             {
                 NamedRange = nr,
@@ -60,7 +60,7 @@ public class ReportTemplateService(
             }).ToList()
         };
 
-        await _templateRepository.AddAsync(report, cancellationToken);
+        await _templateRepository.CreateAsync(report, cancellationToken);
         return _mapper.Map<ReportTemplateDto>(report);
     }
 
@@ -79,7 +79,7 @@ public class ReportTemplateService(
     public async Task AddParameterAsync(ReportParameterDto parameterDto, CancellationToken cancellationToken = default)
     {
         var parameter = _mapper.Map<ReportParameter>(parameterDto);
-        await _parameterRepository.AddAsync(parameter, cancellationToken);
+        await _parameterRepository.CreateAsync(parameter, cancellationToken);
     }
 
     public async Task DeleteReportAsync(long id, CancellationToken cancellationToken = default)

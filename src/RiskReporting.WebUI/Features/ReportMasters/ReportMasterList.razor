@@ -1,0 +1,63 @@
+﻿@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+@using Smbc.Risk.ReportingEngine.WebUI.Features.ReportMasters.Store
+
+@inject IState<ReportMasterState> ReportMasterState
+@inject IDispatcher Dispatcher
+@inject IDialogService DialogService
+
+<MudDataGrid T="ReportMasterDto"
+             Loading="@ReportMasterState.Value.IsLoading"
+             Items="@(ReportMasterState.Value.Reports)"
+             Class="px-4"
+             Bordered="true"
+             Dense="true"
+             Hover="true"
+             Elevation="25"
+             FooterClass="d-flex"
+             ShowMenuIcon="true"
+             Filterable="true"
+             EditTrigger="DataGridEditTrigger.OnRowClick">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudTooltip Text="Add New Report" Placement="Placement.Bottom" Inline="true">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Variant="Variant.Filled" aria-label="Add New Report" OnClick="OpenCreateDialog" />
+        </MudTooltip>
+    </ToolBarContent>
+    <Columns>
+        <HierarchyColumn T="ReportMasterDto" />
+        <PropertyColumn Property="x => x.Name" Title="Report Name" Editable="false" />
+        <PropertyColumn Property="x => x.ReportNamePattern" Title="Report File" Editable="false" />
+@*         <PropertyColumn Property="x => x.Metrics.Count">
+            <MudChip T="string" Color="Color.Info" Size="Size.Small">Number of Metrics</MudChip>
+        </PropertyColumn> *@
+        <PropertyColumn Property="x => x.ReportDirectory" Title="Report Output Directory" />
+        <TemplateColumn CellClass="d-flex justify-between">
+            <CellTemplate>
+                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="ReportMasterDto" PageSizeOptions="new[] { 10, 20, 50, 100 }" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Dispatcher.Dispatch(new LoadReportsAction());
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var dialog = await DialogService.ShowAsync<CreateReportMaster>();
+        var result = await dialog.Result;
+        if (result != null && !result.Canceled && result.Data is CreateReportTemplateRequest dto)
+        {
+            //Dispatcher.Dispatch(new CreateTemplateAction(dto));
+            Dispatcher.Dispatch(new LoadReportsAction());
+        }
+    }
+}

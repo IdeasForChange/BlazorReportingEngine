@@ -12,6 +12,7 @@ namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     public DbSet<SystemParameterType> SystemParameterTypes { get; set; }
+    public DbSet<ReportMaster> ReportMasters { get; set; }
     public DbSet<ReportTemplate> ReportTemplates { get; set; }
     public DbSet<ReportMetric> ReportMetrics { get; set; }
     public DbSet<ReportParameter> ReportParameters { get; set; }

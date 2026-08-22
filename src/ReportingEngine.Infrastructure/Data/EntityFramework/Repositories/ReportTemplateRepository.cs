@@ -22,7 +22,7 @@ internal class ReportTemplateRepository(ApplicationDbContext dbContext)
         // 1. Manage Template File Storage and Versioning
         var highestVersion = await _dbContext.ReportTemplates
             .Where(t => t.Name == name)
-            .MaxAsync(t => (int?)t.Version, cancellationToken) ?? 0;
+            .MaxAsync(t => (int?)t.TemplateVersion, cancellationToken) ?? 0;
 
         int newVersion = highestVersion + 1;
 
@@ -58,10 +58,10 @@ internal class ReportTemplateRepository(ApplicationDbContext dbContext)
         {
             Name = name,
             Description = description,
-            FilePath = filePath,
-            Version = newVersion,
-            OutputDirectory = outputDirectory,
-            FileNamePattern = fileNamePattern,
+            TemplatePath = filePath,
+            TemplateVersion = newVersion,
+            ReportDirectory = outputDirectory,
+            ReportNamePattern = fileNamePattern,
             IsActive = true,
             Parameters = parameters.Select(p => new ReportParameter
             {

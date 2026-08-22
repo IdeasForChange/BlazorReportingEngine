@@ -1,0 +1,12 @@
+﻿<PageTitle>@PageTitle</PageTitle>
+
+<MudText Typo="Typo.h3" Class="page-title" GutterBottom="false">@PageTitle</MudText>
+<MudText Class="mb-8">@PageSubTitle</MudText>
+
+@code {
+    [Parameter]
+    public string? PageTitle { get; set; }
+
+    [Parameter]
+    public string? PageSubTitle { get; set; }
+}

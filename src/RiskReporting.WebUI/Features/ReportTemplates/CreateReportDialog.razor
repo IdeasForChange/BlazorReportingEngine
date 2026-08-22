@@ -11,9 +11,9 @@
     </TitleContent>
     <DialogContent>
         <MudTextField @bind-Value="model.Name" Label="Report Name" Required="true" />
-        <MudTextField @bind-Value="model.Description" Label="Description" />
-        <MudTextField @bind-Value="model.OutputDirectory" Label="Report Directory" Required="true" />
-        <MudTextField @bind-Value="model.FileNamePattern" Label="Report Name Pattern (e.g. {YYYYMMDD}_MarketRisk_LimitUtilisation.xlsx)" Required="true" />
+        <MudTextField @bind-Value="model.Description" Label="Description" Lines="3" MaxLines="6" />
+        <MudTextField @bind-Value="model.ReportDirectory" Label="Report Directory" Required="true" />
+        <MudTextField @bind-Value="model.ReportNamePattern" Label="Report Name Pattern (e.g. {YYYYMMDD}_MarketRisk_LimitUtilisation.xlsx)" Required="true" />
         
         <MudFileUpload T="IBrowserFile" OnFilesChanged="UploadFile" Class="mt-4"
                        Accept=".xlsx"

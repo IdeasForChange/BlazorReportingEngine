@@ -14,9 +14,9 @@ public class ReportTemplateConfiguration : IEntityTypeConfiguration<ReportTempla
         builder.HasKey(e => e.Id);
 
         builder.Property(e => e.Name).IsRequired().HasMaxLength(255);
-        builder.Property(e => e.FilePath).IsRequired().HasMaxLength(1000);
-        builder.Property(e => e.OutputDirectory).IsRequired().HasMaxLength(1000);
-        builder.Property(e => e.FileNamePattern).IsRequired().HasMaxLength(255);
+        builder.Property(e => e.TemplatePath).IsRequired().HasMaxLength(1000);
+        builder.Property(e => e.ReportDirectory).IsRequired().HasMaxLength(1000);
+        builder.Property(e => e.ReportNamePattern).IsRequired().HasMaxLength(255);
         builder.Property(e => e.CreatedBy).HasMaxLength(256);
         builder.Property(e => e.UpdatedBy).HasMaxLength(256);
 

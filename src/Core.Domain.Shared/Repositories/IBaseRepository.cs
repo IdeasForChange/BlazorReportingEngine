@@ -9,7 +9,7 @@ public interface IBaseRepository<T> where T : class
 {   
     Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<T?> GetByIdAsync<TId>(TId id, CancellationToken cancellationToken = default);
-    Task<T> AddAsync(T entity, CancellationToken cancellationToken = default);
+    Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default);
     Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default);

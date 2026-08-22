@@ -31,11 +31,11 @@
     <Columns>
         <HierarchyColumn T="ReportTemplateDto" />
         <PropertyColumn Property="x => x.Name" Title="Template Name" Editable="false" />
-        <PropertyColumn Property="x => x.FileName" Title="Template File" Editable="false" />
+        <PropertyColumn Property="x => x.TemplateName" Title="Template File" Editable="false" />
         <PropertyColumn Property="x => x.Metrics.Count">
             <MudChip T="string" Color="Color.Info" Size="Size.Small">Number of Metrics</MudChip>
         </PropertyColumn>
-        <PropertyColumn Property="x => x.FileNamePattern" Title="Report Output Pattern" />
+        <PropertyColumn Property="x => x.ReportNamePattern" Title="Report Output Pattern" />
         <TemplateColumn CellClass="d-flex justify-between">
             <CellTemplate>
                 <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />

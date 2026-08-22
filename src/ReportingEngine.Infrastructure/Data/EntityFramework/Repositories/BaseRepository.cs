@@ -23,7 +23,7 @@ public abstract class BaseRepository<T>(ApplicationDbContext dbContext) : IBaseR
     }
 
     // CREATE
-    public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
+    public async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
     {
         await _dbContext.Set<T>().AddAsync(entity, cancellationToken);
         await _dbContext.SaveChangesAsync();
