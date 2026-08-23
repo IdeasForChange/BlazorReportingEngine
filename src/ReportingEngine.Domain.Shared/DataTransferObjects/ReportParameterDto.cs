@@ -2,9 +2,9 @@
 
 namespace Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
 
-public record ReportParameterDto
+public class ReportParameterDto
 {
-    public long Id { get; set; }
+    public long? Id { get; set; }
     public long ReportId { get; set; }
     public string Name { get; set; } = string.Empty;
     public ParameterType ParameterType { get; set; } = ParameterType.Text;

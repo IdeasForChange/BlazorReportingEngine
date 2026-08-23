@@ -25,4 +25,18 @@ public class ReportMasterController(IReportManagementService service) : Controll
         var id = await _service.CreateReportAsync(dto, cancellationToken);
         return CreatedAtAction(nameof(GetAll), new { id }, id);
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] ReportMasterDto dto, CancellationToken cancellationToken)
+    {
+        //await _service.UpdateReportAsync(id, dto, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        //await _service.DeleteReportAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

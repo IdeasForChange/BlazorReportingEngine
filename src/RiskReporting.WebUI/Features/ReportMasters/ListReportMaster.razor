@@ -64,13 +64,11 @@
                     <HierarchyColumn T="ReportMasterDto" />
                     <TemplateColumn Title="Report Name">
                          <CellTemplate>
-                            <MudLink OnClick="() => OpenReportInTab(context.Item)" Style="font-weight: 600;" Color="Color.Primary">
-                                @context.Item.Name
-                            </MudLink>
-                            @if (!string.IsNullOrEmpty(context.Item.Description))
-                            {
-                                <MudText Typo="Typo.caption" Display="Display.Block" Color="Color.Secondary">@context.Item.Description</MudText>
-                            }
+                            <MudTooltip ShowOnHover="true" Text="Click to Edit the Report">
+                                <MudLink OnClick="() => OpenReportInTab(context.Item)" Style="font-weight: 600;" Color="Color.Primary">
+                                    @context.Item.Name
+                                </MudLink>
+                            </MudTooltip>
                          </CellTemplate>
                     </TemplateColumn>
                     <PropertyColumn Property="x => x.ReportNamePattern" Title="Report File" />
@@ -90,21 +88,6 @@
                             <MudChip T="string" Color="@(context.Item.IsActive ? Color.Success : Color.Error)" Size="Size.Small">
                                 @(context.Item.IsActive ? "Active" : "Inactive")
                             </MudChip>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn CellClass="d-flex justify-end gap-2" Title="Actions">
-                        <CellTemplate>
-                            <MudTooltip Text="Edit">
-                                <MudIconButton Size="@Size.Small"
-                                               Icon="@Icons.Material.Outlined.Edit"
-                                               Color="Color.Info"
-                                               OnClick="@context.Actions.StartEditingItemAsync" />
-                            </MudTooltip>
-                            <MudTooltip Text="Delete">
-                                <MudIconButton Size="@Size.Small"
-                                               Icon="@Icons.Material.Outlined.Delete"
-                                               Color="Color.Error" />
-                            </MudTooltip>
                         </CellTemplate>
                     </TemplateColumn>
                 </Columns>
@@ -130,7 +113,7 @@
             <MudTabPanel Text="@(string.IsNullOrEmpty(tab.Model.Name) ? "Unsaved Report" : tab.Model.Name)"
                          Icon="@Icons.Material.Outlined.Edit"
                          ID="@tab.TabId">
-                <EditReportMaster Model="tab.Model" OnSave="() => SaveReport(tab.Model)" />
+                <EditReportMaster TabId="@tab.TabId" Model="tab.Model" OnSave="() => SaveReport(tab.Model)" />
             </MudTabPanel>
         }
 
@@ -157,12 +140,6 @@
     private void RefreshData()
     {
         Dispatcher.Dispatch(new FetchReportMasterAction());
-    }
-
-    private void OpenBlankReport()
-    {
-        _openTabs.Add(new ReportTabItem { Model = new ReportMasterDto() });
-        _activeTabIndex = _openTabs.Count;
     }
 
     private void OpenReportInTab(ReportMasterDto dto)
@@ -230,7 +207,6 @@
 
     private void SaveReport(ReportMasterDto dto)
     {
-        //Dispatcher.Dispatch(new SaveReportMasterAction(dto));
-        //Snackbar.Add($"Report '{dto.Name}' saved successfully.", Severity.Success);
+        Dispatcher.Dispatch(new UpdateReportMasterAction(dto));
     }
 }

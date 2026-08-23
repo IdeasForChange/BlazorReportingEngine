@@ -214,6 +214,20 @@
                 </MudStack>
             </MudStack>
 
+            <MudExpansionPanels MultiExpansion="false">
+                <MudExpansionPanel Text="Upload a new Template" Class="mb-2">
+                    <MudFileUpload T="IBrowserFile"
+                                    OnFilesChanged="UploadFile"
+                                    Class="mt-4"
+                                    Accept=".xlsx, .xlst, .xls"
+                                    Required="true">
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                            @(selectedFile == null ? "Upload Excel Template File" : selectedFile.Name)
+                        </MudButton>
+                    </MudFileUpload>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+
             @if (Model.Templates.Count > 0 && Model.Templates.Any())
             {
                 var template = Model.Templates.OrderByDescending(p => p.TemplateVersion).FirstOrDefault();
@@ -234,17 +248,16 @@
                         </MudCardHeader>
 
                         <MudCardContent>
-                            <MudDivider />
-                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Query Metrics</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Primary">Query Metrics</MudText>
 
-                            <MudExpansionPanels MultiExpansion="true">
+                            <MudExpansionPanels MultiExpansion="false">
 
                             @foreach (var metric in template.Metrics)
                             {
                                 <MudExpansionPanel Text="@metric.NamedRange">
                                     <MudPaper Class="pa-3 mb-3 rounded-lg" Outlined="true" Elevation="0" Style="border-left: 4px solid var(--mud-palette-primary) !important;">
                                         <MudGrid Class="mb-2">
-                                            <MudItem xs="12" sm="6">
+                                            <MudItem xs="12" sm="10">
                                                 <MudSelect T="DatabaseType" @bind-Value="metric.DatabaseType" Label="Target DB" Variant="Variant.Outlined" Margin="Margin.Dense">
                                                     @foreach (DatabaseType dbType in Enum.GetValues<DatabaseType>())
                                                     {
@@ -257,7 +270,7 @@
                                             </MudItem>
                                             <MudItem xs="12">
                                                 <div class="sql-editor-wrapper">
-                                                    <StandaloneCodeEditor @ref="_editorMap[metric]"
+                                                    <StandaloneCodeEditor @ref="_editorMap[metric.NamedRange]"
                                                     ConstructionOptions="(e) => GetMonacoOptions(e, metric.SqlQuery)"
                                                     OnDidChangeModelContent="() => UpdateSqlQuery(metric)" />
                                                 </div>
@@ -267,10 +280,12 @@
                                 </MudExpansionPanel>
                             }
                             </MudExpansionPanels>
+
                         </MudCardContent>
                     </MudCard>
                 }
             }
+        
         </MudTabPanel>
     
     </MudTabs>
@@ -290,13 +305,14 @@
 </style>
 
 @code {
+    [Parameter] public string TabId { get; set; } = string.Empty;
     [Parameter] public ReportMasterDto Model { get; set; } = new();
     [Parameter] public EventCallback OnSave { get; set; }
 
     private MudForm _form = default!;
     private bool _isValid;
-    private Dictionary<ReportMetricDto, StandaloneCodeEditor> _editorMap = new();
-
+    private Dictionary<string, StandaloneCodeEditor> _editorMap = new();
+    private IBrowserFile? selectedFile;
 
     private class MetricPreviewState
     {
@@ -305,8 +321,6 @@
     }
 
     private void AddParameter() => Model.Parameters.Add(new ReportParameterDto());
-    private void AddTemplate() => Model.Templates.Add(new ReportTemplateDto());
-    private void AddMetric(ReportTemplateDto template) => template.Metrics.Add(new ReportMetricDto());
 
     private StandaloneEditorConstructionOptions GetMonacoOptions(StandaloneCodeEditor editor, string initialSql)
     {
@@ -316,14 +330,15 @@
             Language = "sql",
             Value = initialSql,
             Theme = "vs-dark",
-            Minimap = new EditorMinimapOptions { Enabled = true },
+            
+            Minimap = new EditorMinimapOptions { Enabled = false },
             ScrollBeyondLastLine = false
         };
     }
 
     private async Task UpdateSqlQuery(ReportMetricDto metric)
     {
-        if (_editorMap.TryGetValue(metric, out var editor))
+        if (_editorMap.TryGetValue(metric.NamedRange, out var editor))
         {
             metric.SqlQuery = await editor.GetValue();
         }
@@ -354,5 +369,30 @@
         var field = value.GetType().GetField(value.ToString());
         var attribute = field?.GetCustomAttribute<DisplayAttribute>();
         return attribute?.Name ?? value.ToString();
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        using var memoryStream = new MemoryStream();
+        await selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream);
+
+        var temporaryTemplateId = -1; // Temporary ID for new template
+        var template = Model.Templates.Where(p => p.Id == temporaryTemplateId).FirstOrDefault();
+
+        if(template != null)
+        {
+            Model.Templates.Remove(template);
+        }
+
+        template = new ReportTemplateDto
+        {
+            Id = temporaryTemplateId,
+            TemplateFileName = selectedFile.Name,
+            FileBytes = memoryStream.ToArray(),
+            FileName = selectedFile.Name,
+        };
+
+        Model.Templates.Add(template);
     }
 }

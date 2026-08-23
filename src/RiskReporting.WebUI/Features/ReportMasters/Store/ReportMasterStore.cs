@@ -26,9 +26,9 @@ public class ReportMasterFeature : Feature<ReportMasterState>
 public record FetchReportMasterAction(bool IncludeInactive = false);
 public record FetchReportMasterSuccessAction(IEnumerable<ReportMasterDto> Reports);
 
-public record SaveReportMasterAction(SaveReportMasterDto Dto);
+public record SaveReportMasterAction(SaveReportMasterDto ReportMaster);
+public record UpdateReportMasterAction(ReportMasterDto ReportMaster);
 public record DeleteReportMasterAction(long Id);
-
 
 // Reducers for handling state changes in response to actions
 public static class ReportMasterReducers
@@ -75,15 +75,55 @@ public class ReportMasterEffects(HttpClient httpClient, IConfiguration configura
     [EffectMethod]
     public async Task HandleSave(SaveReportMasterAction action, IDispatcher dispatcher)
     {
-        if (action.Dto.Id.HasValue && action.Dto.Id > 0)
+        try
         {
-            await _httpClient.PutAsJsonAsync($"{apiEndpoint}/{action.Dto.Id}", action.Dto);
+            if (action.ReportMaster.Id.HasValue && action.ReportMaster.Id > 0)
+            {
+                await _httpClient.PutAsJsonAsync($"{apiEndpoint}/{action.ReportMaster.Id}", action.ReportMaster);
+            }
+            else
+            {
+                await _httpClient.PostAsJsonAsync(apiEndpoint, action.ReportMaster);
+            }
+            _snackbar.Add($"Report '{action.ReportMaster.Name}' saved successfully.", Severity.Success);
         }
-        else
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await _httpClient.PostAsJsonAsync(apiEndpoint, action.Dto);
+            // Dispatch a failure action instead of throwing so the circuit stays alive
+            _snackbar.Add($"Unauthorized: Please log in again.: {ex.Message}", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            _snackbar.Add($"Unable to load reports: {ex.Message}", Severity.Error);
         }
 
+        dispatcher.Dispatch(new FetchReportMasterAction());
+    }
+
+    [EffectMethod]
+    public async Task HandleSave(UpdateReportMasterAction action, IDispatcher dispatcher)
+    {
+        try
+        {
+            if (action.ReportMaster.Id > 0)
+            {
+                await _httpClient.PutAsJsonAsync($"{apiEndpoint}/{action.ReportMaster.Id}", action.ReportMaster);
+                _snackbar.Add($"Report '{action.ReportMaster.Name}' saved successfully.", Severity.Success);
+            }
+            else
+            {
+                _snackbar.Add($"Unable to update master report: {action.ReportMaster.Name} [{action.ReportMaster.Id}]", Severity.Error);
+            }
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            // Dispatch a failure action instead of throwing so the circuit stays alive
+            _snackbar.Add($"Unauthorized: Please log in again.: {ex.Message}", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            _snackbar.Add($"Unable to load reports: {ex.Message}", Severity.Error);
+        }
         dispatcher.Dispatch(new FetchReportMasterAction());
     }
 
