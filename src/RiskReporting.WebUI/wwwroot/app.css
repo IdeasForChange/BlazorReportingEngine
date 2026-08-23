@@ -59,3 +59,20 @@ body {
     font-size: 14px;
     line-height: 1.42857143;
 }
+
+.sql-editor-wrapper {
+    height: 220px;
+    width: 100%;
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
+    .sql-editor-wrapper > div {
+        height: 100% !important;
+        width: 100%;
+    }
+
+
+    .sql-editor-wrapper .monaco-editor-container {
+        height: 100% !important;
+        width: 100%;
+    }

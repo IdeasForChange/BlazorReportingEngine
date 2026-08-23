@@ -10,13 +10,13 @@
     <MudDynamicTabs @bind-ActivePanelIndex="_activeTabIndex"
                     CloseTab="CloseTab"
                     ApplyEffectsToContainer="true"
-                    Class="pa-5"
+                    Class="pa-0"
                     Elevation="0"
                     AddIconStyle="visibility: hidden;"
                     HeaderPosition="TabHeaderPosition.After">
 
         @* Main Master Grid Tab *@
-        <MudTabPanel Text="All Reports" Icon="@Icons.Material.Outlined.Dashboard" CanClose="false">
+        <MudTabPanel Text="All Reports" Icon="@Icons.Material.Outlined.Dashboard" ShowCloseIcon="false" CanClose="false">
 
             <MudDataGrid T="ReportMasterDto"
                          Loading="@ReportMasterState.Value.IsLoading"
