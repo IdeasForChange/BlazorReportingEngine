@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
+using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Configurations;
 
@@ -11,10 +12,25 @@ public class ReportMetricConfiguration : IEntityTypeConfiguration<ReportMetric>
         builder.ToTable("ReportMetric");
 
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.NamedRange).IsRequired().HasMaxLength(255);
-        builder.Property(e => e.SqlQuery).IsRequired();
-        builder.Property(e => e.DatabaseType).HasConversion<int>().IsRequired();
+        builder.Property(e => e.ReportTemplateId).IsRequired();
+        builder.Property(e => e.NamedRange).HasMaxLength(255).IsRequired();
+        builder.Property(e => e.SqlQuery).HasColumnType("nvarchar(max)").IsRequired();
+        builder.Property(e => e.DatabaseType).HasConversion<int>().HasDefaultValue(DatabaseType.SqlServer).IsRequired();
+        builder.Property(e => e.MaxRows).IsRequired(false);
 
+        // Common Table Items
+        builder.Property(e => e.EntityVersion).HasDefaultValue(1).IsRequired();
+        builder.Property(e => e.EntityWrittenAt).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+
+        // Audit Flags
+        builder.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
+        builder.Property(e => e.CreatedBy).HasMaxLength(256).HasDefaultValue("System");
+        builder.Property(e => e.CreatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+        builder.Property(e => e.UpdatedBy).HasMaxLength(256).HasDefaultValue("System");
+        builder.Property(e => e.UpdatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+
+
+        // Foreign Key Index
         builder.HasIndex(e => e.ReportTemplateId);
     }
 }

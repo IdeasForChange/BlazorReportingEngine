@@ -26,7 +26,6 @@ public static class ServiceRegistration
         services.AddScoped<ISystemParameterTypeService, SystemParameterTypeService>();
         services.AddScoped<IExcelParserService, ExcelParserService>();
         services.AddScoped<IReportManagementService, ReportManagementService>();
-        services.AddScoped<IReportTemplateService, ReportTemplateService>();
 
         return services;
     }

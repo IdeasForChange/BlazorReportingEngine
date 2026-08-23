@@ -19,6 +19,8 @@ internal class ReportTemplateRepository(ApplicationDbContext dbContext)
         List<ReportParameterDto> parameters,
         CancellationToken cancellationToken = default)
     {
+        throw new NotImplementedException("This method is not implemented yet.");
+        /*
         // 1. Manage Template File Storage and Versioning
         var highestVersion = await _dbContext.ReportTemplates
             .Where(t => t.Name == name)
@@ -80,6 +82,6 @@ internal class ReportTemplateRepository(ApplicationDbContext dbContext)
         _dbContext.ReportTemplates.Add(template);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return template.Id;
+        return template.Id;*/
     }
 }

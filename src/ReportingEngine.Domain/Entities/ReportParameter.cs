@@ -5,10 +5,10 @@ namespace Smbc.Risk.ReportingEngine.Domain.Entities;
 
 public class ReportParameter : EntityBase
 {
-    public long ReportTemplateId { get; set; }
+    public long ReportId { get; set; }
     public string Name { get; set; } = string.Empty;
-    public ParameterType Type { get; set; } = ParameterType.Text;
-    public bool IsRequired { get; set; }
+    public int ParameterType { get; set; } = 1;
+    public bool IsRequired { get; set; } = false;
 
-    public ReportTemplate? ReportTemplate { get; set; }
+    public ReportMaster? Report { get; set; }
 }

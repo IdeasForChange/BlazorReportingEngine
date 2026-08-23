@@ -1,0 +1,502 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@using BlazorMonaco
+@using BlazorMonaco.Editor
+@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+@using Smbc.Risk.ReportingEngine.Domain.Shared.Enums
+
+@inject HttpClient Http
+
+<MudForm @ref="_form" @bind-IsValid="_isValid">
+
+    @* Action Bar Header *@
+    <MudPaper Class="pa-3 px-4 mb-4 rounded-lg d-flex justify-space-between align-center" 
+                Outlined="true">
+
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+            <MudIconButton Icon="@Icons.Material.Outlined.Assessment" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" />
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h6">Edit Report Template</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Primary">
+                    Modify report templates by adding parameters and completing the SQL Metrics.
+                </MudText>
+            </MudStack>
+        </MudStack>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="OnSave"
+                   Class="rounded-pill">
+            Save Configuration
+        </MudButton>
+    </MudPaper>
+
+    @* Inner Pill-Style Sub Tabs *@
+    <MudTabs Elevation="0"
+             ApplyEffectsToContainer="true"
+             Rounded="true"
+             Border="true"
+             Outlined="true"
+             Class="pa-4">
+
+        @* SUB-TAB 1: General Info *@
+        <MudTabPanel Text="Master Settings" Icon="@Icons.Material.Outlined.Settings">
+           
+              <MudPaper Elevation="0" Class="rounded">
+                    <MudStack Spacing="2">
+
+                        <MudGrid Spacing="1" Class="pt-4">
+                            <MudItem xs="12" md="8">
+                                <MudTextField T="string"
+                                              @bind-Value="Model.Name"
+                                              Label="Report Master Name"
+                                              Placeholder="e.g. Risk VaR Report"
+                                              Required="true"
+                                              RequiredError="Report master name is required."
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Description"
+                                              AdornmentColor="Color.Primary" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="4">
+                                <MudPaper Variant="Variant.Outlined" Class="d-flex justify-space-between align-center border-dashed">
+                                    <MudStack Spacing="0" Class="pa-1">
+                                        <MudText Typo="Typo.caption" Color="Color.Primary">Template Status</MudText>
+                                        <MudText Typo="Typo.body2" Color="@(Model.IsActive ? Color.Success : Color.Error)">
+                                            @(Model.IsActive ? "Active" : "Inactive")
+                                        </MudText>
+                                    </MudStack>
+                                    <MudSwitch T="bool"
+                                               @bind-Value="Model.IsActive"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               AriaLabel="Toggle template status" />
+                                </MudPaper>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField T="string"
+                                              @bind-Value="Model.Description"
+                                              Label="Description"
+                                              Placeholder="Optional operational notes..."
+                                              Lines="2"
+                                              MaxLength="1000"
+                                              Counter="1000"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudStack>
+                </MudPaper>
+
+                 <MudPaper Elevation="0" Class="rounded">
+                    <MudStack Spacing="2">
+
+                        <MudGrid Spacing="1">    
+                            
+                            <MudItem xs="12">
+                                <MudTextField T="string"
+                                              @bind-Value="Model.ReportDirectory"
+                                              Label="Report Directory"
+                                              Placeholder="C:\Reports\Finance"
+                                              Required="true"
+                                              RequiredError="Report directory path is required."
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Folder"
+                                              AdornmentColor="Color.Secondary" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="8">
+                                <MudTextField T="string"
+                                              @bind-Value="Model.ReportNamePattern"
+                                              Label="Report Name Pattern"
+                                              Placeholder="Risk_VaR_Report_{YYYY}_{MM}_{DD}.xlsx"
+                                              Required="true"
+                                              RequiredError="Report name pattern is required."
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@Icons.Material.Filled.DataObject"
+                                              AdornmentColor="Color.Secondary" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="4">
+                                <!-- Tokens -->
+                                <MudStack Spacing="0" Class="pa-0 ml-5">
+                                    <MudText Typo="Typo.caption" Color="Color.Primary">Insert Report Name Token</MudText>
+                                    <MudChipSet T="string" SelectionMode="SelectionMode.SingleSelection">
+                                        <MudChip Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" OnClick="@(() => AddToken("{YYYY}"))">
+                                            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" /> Year
+                                        </MudChip>
+                                        <MudChip Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" OnClick="@(() => AddToken("{MM}"))">Month</MudChip>
+                                        <MudChip Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" OnClick="@(() => AddToken("{DD}"))">Day</MudChip>
+                                        <MudChip Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" OnClick="@(() => AddToken("{Quarter}"))">Quarter</MudChip>
+                                    </MudChipSet> 
+                                </MudStack>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <!-- Live Preview -->
+                                @if (!string.IsNullOrWhiteSpace(Model.ReportNamePattern))
+                                {
+                                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Icon="@Icons.Material.Filled.Visibility">
+                                        <MudStack Spacing="0">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Generated filename preview</MudText>
+                                            <MudText Typo="Typo.body2"><b>@GenerateSampleFilename(Model.ReportNamePattern)</b></MudText>
+                                        </MudStack>
+                                    </MudAlert>
+                                }
+                            </MudItem>
+
+                        </MudGrid>
+                    </MudStack>
+                </MudPaper>
+
+        </MudTabPanel>
+
+        @* SUB-TAB 2: Parameters Manager *@
+        <MudTabPanel Text="Parameters" Icon="@Icons.Material.Outlined.Tune" BadgeData="@Model.Parameters.Count" BadgeColor="Color.Primary">
+            
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2 mt-2 pt-4">
+                <div>
+                    <MudText Typo="Typo.h6">Configured Parameters</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Define execution variables passed to underlying SQL queries.</MudText>
+                </div>
+                <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" OnClick="AddParameter" Class="rounded-pill">
+                    Add Parameter
+                </MudButton>
+            </MudStack>
+
+            @if (!Model.Parameters.Any())
+            {
+                <MudPaper Class="pa-8 text-center border-dashed rounded-lg" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Outlined.Tune" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">No parameters added yet.</MudText>
+                </MudPaper>
+            }
+            else
+            {
+                <MudTable Items="@Model.Parameters" Hover="true" Elevation="0" Outlined="true" Class="rounded-lg">
+                    <HeaderContent>
+                        <MudTh>Parameter Name</MudTh>
+                        <MudTh>Data Type</MudTh>
+                        <MudTh>Required</MudTh>
+                        <MudTh Style="text-align:right">Action</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd><MudTextField @bind-Value="context.Name" Required="true" Margin="Margin.Dense" Variant="Variant.Outlined" /></MudTd>
+                        <MudTd>
+                            <MudSelect T="ParameterType" @bind-Value="context.ParameterType" Margin="Margin.Dense" Variant="Variant.Outlined">
+                                @foreach (ParameterType type in Enum.GetValues<ParameterType>())
+                                {
+                                    <MudSelectItem Value="@type">@GetEnumDisplayName(type)</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudTd>
+                        <MudTd><MudCheckBox @bind-Value="context.IsRequired" Color="Color.Primary" Dense="true" /></MudTd>
+                        <MudTd Style="text-align:right">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => Model.Parameters.Remove(context)" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudTabPanel>
+
+        @* SUB-TAB 3: Templates & Formatted SQL Query Metrics *@
+        <MudTabPanel Text="Templates & Metrics" Icon="@Icons.Material.Outlined.Code" BadgeData="@Model.Templates.Count" BadgeColor="Color.Secondary">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-2 pt-4">
+                <MudIconButton Icon="@Icons.Material.Outlined.PermDataSetting" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Medium" />
+                <MudStack Spacing="0" Class="ml-1">
+                    <MudText Typo="Typo.subtitle2">Templates & SQL Metrics</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Primary">Map named excel ranges to DB queries.</MudText>
+                </MudStack>
+            </MudStack>
+
+            @foreach (var template in Model.Templates)
+            {
+                <MudCard Class="mb-4 rounded-lg" Outlined="true" Elevation="0">
+                    <MudCardHeader Class="pa-3" Style="background-color: var(--mud-palette-background-grey);">
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.subtitle2" Style="font-weight:600;">
+                                <MudIcon Icon="@Icons.Material.Outlined.InsertDriveFile" Size="Size.Small" Class="mr-1" Style="vertical-align:text-bottom" />
+                                @(string.IsNullOrEmpty(template.TemplateFileName) ? "New Template Configuration" : template.TemplateFileName)
+                            </MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => Model.Templates.Remove(template)" />
+                        </CardHeaderActions>
+                    </MudCardHeader>
+
+                    <MudCardContent Class="pa-4">
+                        <MudGrid Class="mb-3">
+                            <MudItem xs="12" sm="5">
+                                <MudTextField @bind-Value="template.TemplateFileName" Label="File Name" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true" />
+                            </MudItem>
+                            <MudItem xs="12" sm="5">
+                                <MudTextField @bind-Value="template.TemplatePath" Label="Template Path" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true" />
+                            </MudItem>
+                            <MudItem xs="12" sm="2">
+                                <MudNumericField @bind-Value="template.TemplateVersion" Label="Version" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true" Min="1" />
+                            </MudItem>
+                        </MudGrid>
+
+                        <MudDivider Class="my-3" />
+
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Query Metrics</MudText>
+@*                             <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" Color="Color.Secondary" Variant="Variant.Text" OnClick="() => AddMetric(template)">
+                                Add Metric
+                            </MudButton> *@
+                        </MudStack>
+
+                        @foreach (var metric in template.Metrics)
+                        {
+                            <MudPaper Class="pa-3 mb-3 rounded-lg" Outlined="true" Elevation="0" Style="border-left: 4px solid var(--mud-palette-primary) !important;">
+                                <MudGrid Class="mb-2">
+                                    <MudItem xs="12" sm="4">
+                                        <MudTextField @bind-Value="metric.NamedRange" Label="Named Range" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true" Disabled="true" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="4">
+                                        <MudSelect T="DatabaseType" @bind-Value="metric.DatabaseType" Label="Target DB" Variant="Variant.Outlined" Margin="Margin.Dense">
+                                            @foreach (DatabaseType dbType in Enum.GetValues<DatabaseType>())
+                                            {
+                                                <MudSelectItem Value="@dbType">@GetEnumDisplayName(dbType)</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="3">
+                                        <MudNumericField @bind-Value="metric.MaxRows" Label="Max Rows" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Min="1" />
+                                    </MudItem>
+@*                                     <MudItem xs="12" sm="1" Class="d-flex justify-end align-center">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => template.Metrics.Remove(metric)" />
+                                    </MudItem> *@
+                                    <MudItem xs="12">
+                                         <div style="height: 220px; border-top: 1px solid var(--mud-palette-lines-default);" Class="mt-1">
+                                            <StandaloneCodeEditor @ref="_editorMap[metric]"
+                                                                  ConstructionOptions="(e) => GetMonacoOptions(e, metric.SqlQuery)"
+                                                                  OnDidChangeModelContent="() => UpdateSqlQuery(metric)" />
+                                        </div>
+
+                                    </MudItem>
+                                </MudGrid>
+
+                                @* Inner Nested Sub-Tabs for SQL Editor vs Live Preview *@
+@*                                 <MudTabs Elevation="0" Outlined="true" ApplyEffectsToPanels="true" HeaderPosition="TabHeaderPosition.After" Class="rounded-md overflow-hidden">
+ *@
+@*                                     <MudTabPanel Text="SQL Editor" Icon="@Icons.Material.Outlined.Code">
+                                    </MudTabPanel> *@
+
+                                    @* <MudTabPanel Text="Live Execution & Preview" Icon="@Icons.Material.Outlined.PlayCircle">
+                                        <MudStack Class="pa-3">
+                                            @if (Model.Parameters.Any())
+                                            {
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary" Style="font-weight:600;">TEST PARAMETER VALUES:</MudText>
+                                                <MudGrid Class="mb-2">
+                                                    @foreach (var param in Model.Parameters)
+                                                    {
+                                                        <MudItem xs="12" sm="4">
+                                                            <MudTextField T="string"
+                                                                          Label="@param.Name"
+                                                                          Variant="Variant.Outlined"
+                                                                          Margin="Margin.Dense"
+                                                                          ValueChanged="(val) => SetParamValue(metric, param.Name, val)" />
+                                                        </MudItem>
+                                                    }
+                                                </MudGrid>
+                                            }
+
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                                                <MudButton Variant="Variant.Filled"
+                                                           Color="Color.Success"
+                                                           StartIcon="@Icons.Material.Filled.PlayArrow"
+                                                           Size="Size.Small"
+                                                           Class="rounded-pill"
+                                                           OnClick="() => ExecutePreview(metric)">
+                                                    Run Query
+                                                </MudButton>
+
+                                                @if (_previewStates.TryGetValue(metric, out var state) && state.IsLoading)
+                                                {
+                                                    <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+                                                }
+                                                else if (state != null && state.Response != null)
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Color="state.Response.IsSuccess ? Color.Success : Color.Error" Variant="Variant.Text">
+                                                        @(state.Response.IsSuccess
+                                                            ? $"Success ({state.Response.ExecutionTimeMs} ms, {state.Response.Rows.Count} rows)"
+                                                            : $"Error: {state.Response.ErrorMessage}")
+                                                    </MudChip>
+                                                }
+                                            </MudStack>
+
+                                            @if (_previewStates.TryGetValue(metric, out var activeState) && activeState.Response?.IsSuccess == true)
+                                            {
+                                                <MudDataGrid Items="@activeState.Response.Rows"
+                                                             Filterable="true"
+                                                             SortMode="SortMode.Multiple"
+                                                             Dense="true"
+                                                             Hover="true"
+                                                             Elevation="0"
+                                                             Outlined="true">
+                                                    <Columns>
+                                                        @foreach (var col in activeState.Response.Columns)
+                                                        {
+                                                            <TemplateColumn Title="@col">
+                                                                <CellTemplate>
+                                                                    @if (context.Item.TryGetValue(col, out var val))
+                                                                    {
+                                                                        <span>@(val?.ToString() ?? "NULL")</span>
+                                                                    }
+                                                                </CellTemplate>
+                                                            </TemplateColumn>
+                                                        }
+                                                    </Columns>
+                                                    <PagerContent>
+                                                        <MudDataGridPager T="Dictionary<string, object?>" />
+                                                    </PagerContent>
+                                                </MudDataGrid>
+                                            }
+                                        </MudStack>
+                                 </MudTabPanel>
+  *@                         @* </MudTabs> *@
+                            </MudPaper>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</MudForm>
+
+@code {
+    [Parameter] public ReportMasterDto Model { get; set; } = new();
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private MudForm _form = default!;
+    private bool _isValid;
+    private Dictionary<ReportMetricDto, StandaloneCodeEditor> _editorMap = new();
+    private Dictionary<ReportMetricDto, MetricPreviewState> _previewStates = new();
+
+    private class MetricPreviewState
+    {
+        public bool IsLoading { get; set; }
+        public Dictionary<string, string> ParamValues { get; set; } = new();
+        //public ExecuteQueryPreviewResponse? Response { get; set; }
+    }
+
+    private void AddParameter() => Model.Parameters.Add(new ReportParameterDto());
+    private void AddTemplate() => Model.Templates.Add(new ReportTemplateDto());
+    private void AddMetric(ReportTemplateDto template) => template.Metrics.Add(new ReportMetricDto());
+
+    private StandaloneEditorConstructionOptions GetMonacoOptions(StandaloneCodeEditor editor, string initialSql)
+    {
+        return new StandaloneEditorConstructionOptions
+        {
+            AutomaticLayout = true,
+            Language = "sql",
+            Value = initialSql,
+            Theme = "vs-dark",
+            Minimap = new EditorMinimapOptions { Enabled = false },
+            ScrollBeyondLastLine = false
+        };
+    }
+
+    private async Task UpdateSqlQuery(ReportMetricDto metric)
+    {
+        if (_editorMap.TryGetValue(metric, out var editor))
+        {
+            metric.SqlQuery = await editor.GetValue();
+        }
+    }
+
+    private void SetParamValue(ReportMetricDto metric, string paramName, string value)
+    {
+        if (!_previewStates.ContainsKey(metric))
+            _previewStates[metric] = new MetricPreviewState();
+
+        _previewStates[metric].ParamValues[paramName] = value;
+    }
+
+    private void AddToken(string token)
+    {
+        Model.ReportNamePattern ??= string.Empty;
+        Model.ReportNamePattern += token;
+    }
+
+
+    private string GenerateSampleFilename(string? pattern)
+    {
+        if (string.IsNullOrWhiteSpace(pattern))
+            return string.Empty;
+
+        var now = DateTime.UtcNow;
+
+        return pattern
+            .Replace("{YYYY}", now.ToString("yyyy"))
+            .Replace("{MM}", now.ToString("MM"))
+            .Replace("{DD}", now.ToString("dd"))
+            .Replace("{Quarter}", $"Q{(now.Month - 1) / 3 + 1}");
+    }
+
+    private async Task ExecutePreview(ReportMetricDto metric)
+    {
+        if (!_previewStates.ContainsKey(metric))
+            _previewStates[metric] = new MetricPreviewState();
+
+        var state = _previewStates[metric];
+        state.IsLoading = true;
+        StateHasChanged();
+
+        await UpdateSqlQuery(metric);
+
+        // var request = new ExecuteQueryPreviewRequest
+        // {
+        //     SqlQuery = metric.SqlQuery,
+        //     DatabaseType = metric.DatabaseType,
+        //     MaxRows = metric.MaxRows ?? 50,
+        //     ParameterValues = state.ParamValues
+        // };
+
+        try
+        {
+            // var httpResp = await Http.PostAsJsonAsync("api/ReportMaster/preview-query", request);
+            // if (httpResp.IsSuccessStatusCode)
+            // {
+            //     state.Response = await httpResp.Content.ReadFromJsonAsync<ExecuteQueryPreviewResponse>();
+            // }
+            // else
+            // {
+            //     state.Response = new ExecuteQueryPreviewResponse
+            //     {
+            //         IsSuccess = false,
+            //         ErrorMessage = $"HTTP {(int)httpResp.StatusCode}: {httpResp.ReasonPhrase}"
+            //     };
+            // }
+        }
+        catch (Exception ex)
+        {
+            // state.Response = new ExecuteQueryPreviewResponse
+            // {
+            //     IsSuccess = false,
+            //     ErrorMessage = ex.Message
+            // };
+        }
+        finally
+        {
+            state.IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string GetEnumDisplayName<TEnum>(TEnum value) where TEnum : Enum
+    {
+        var field = value.GetType().GetField(value.ToString());
+        var attribute = field?.GetCustomAttribute<DisplayAttribute>();
+        return attribute?.Name ?? value.ToString();
+    }
+}

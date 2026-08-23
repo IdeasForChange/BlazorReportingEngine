@@ -5,59 +5,231 @@
 @inject IDispatcher Dispatcher
 @inject IDialogService DialogService
 
-<MudDataGrid T="ReportMasterDto"
-             Loading="@ReportMasterState.Value.IsLoading"
-             Items="@(ReportMasterState.Value.Reports)"
-             Class="px-4"
-             Bordered="true"
-             Dense="true"
-             Hover="true"
-             Elevation="25"
-             FooterClass="d-flex"
-             ShowMenuIcon="true"
-             Filterable="true"
-             EditTrigger="DataGridEditTrigger.OnRowClick">
-    <ToolBarContent>
-        <MudSpacer />
-        <MudTooltip Text="Add New Report" Placement="Placement.Bottom" Inline="true">
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Variant="Variant.Filled" aria-label="Add New Report" OnClick="OpenCreateDialog" />
-        </MudTooltip>
-    </ToolBarContent>
-    <Columns>
-        <HierarchyColumn T="ReportMasterDto" />
-        <PropertyColumn Property="x => x.Name" Title="Report Name" Editable="false" />
-        <PropertyColumn Property="x => x.ReportNamePattern" Title="Report File" Editable="false" />
-@*         <PropertyColumn Property="x => x.Metrics.Count">
-            <MudChip T="string" Color="Color.Info" Size="Size.Small">Number of Metrics</MudChip>
-        </PropertyColumn> *@
-        <PropertyColumn Property="x => x.ReportDirectory" Title="Report Output Directory" />
-        <TemplateColumn CellClass="d-flex justify-between">
-            <CellTemplate>
-                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
-                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" />
-            </CellTemplate>
-        </TemplateColumn>
-    </Columns>
-    <PagerContent>
-        <MudDataGridPager T="ReportMasterDto" PageSizeOptions="new[] { 10, 20, 50, 100 }" />
-    </PagerContent>
-</MudDataGrid>
+@* Styled Workspace Multi-Tabs *@
+<MudPaper Elevation="2" Class="d-flex flex-column flex-grow-1 h-90 w-100 pa-0" Style="min-height: calc(100vh - 200px);">
+    <MudDynamicTabs @bind-ActivePanelIndex="_activeTabIndex"
+                    CloseTab="CloseTab"
+                    ApplyEffectsToContainer="true"
+                    Class="pa-5"
+                    Elevation="0"
+                    AddIconStyle="visibility: hidden;"
+                    HeaderPosition="TabHeaderPosition.After">
+
+        @* Main Master Grid Tab *@
+        <MudTabPanel Text="All Reports" Icon="@Icons.Material.Outlined.Dashboard" CanClose="false">
+
+            <MudDataGrid T="ReportMasterDto"
+                         Loading="@ReportMasterState.Value.IsLoading"
+                         Items="@ReportMasterState.Value.Reports"
+                         QuickFilter="@FilterFunc"
+                         Bordered="false"
+                         Outlined="true"
+                         Dense="true"
+                         Hover="true"
+                         Elevation="0"
+                         Class="d-flex flex-column flex-grow-1"
+                         HeaderClass="mud-theme-primary-text font-weight-bold"
+                         EditTrigger="DataGridEditTrigger.OnRowClick">
+
+                <ToolBarContent>
+
+                    <MudTextField @bind-Value="_searchString"
+                                  Placeholder="Search reports..."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Medium"
+                                  Class="mt-0 mr-4"
+                                  Immediate="true"
+                                  Clearable="true" />
+
+                    <MudSpacer />
+
+                    <MudTooltip Text="Refresh Data" Placement="Placement.Bottom">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Success"
+                                       Variant="Variant.Outlined"
+                                       Class="mr-2"
+                                       OnClick="RefreshData" />
+                    </MudTooltip>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="OpenCreateDialog">
+                        Add Report
+                    </MudButton>
+                </ToolBarContent>
+
+                <Columns>
+                    <HierarchyColumn T="ReportMasterDto" />
+                    <TemplateColumn Title="Report Name">
+                         <CellTemplate>
+                            <MudLink OnClick="() => OpenReportInTab(context.Item)" Style="font-weight: 600;" Color="Color.Primary">
+                                @context.Item.Name
+                            </MudLink>
+                            @if (!string.IsNullOrEmpty(context.Item.Description))
+                            {
+                                <MudText Typo="Typo.caption" Display="Display.Block" Color="Color.Secondary">@context.Item.Description</MudText>
+                            }
+                         </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.ReportNamePattern" Title="Report File" />
+                    <PropertyColumn Property="x => x.ReportDirectory" Title="Output Directory" />
+                    <TemplateColumn Title="Number of Parameters">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.Item.Parameters.Count</MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Template Metrics">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@context.Item.Templates.OrderByDescending(p => p.TemplateVersion).FirstOrDefault()?.Metrics.Count</MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Status">
+                        <CellTemplate>
+                            <MudChip T="string" Color="@(context.Item.IsActive ? Color.Success : Color.Error)" Size="Size.Small">
+                                @(context.Item.IsActive ? "Active" : "Inactive")
+                            </MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn CellClass="d-flex justify-end gap-2" Title="Actions">
+                        <CellTemplate>
+                            <MudTooltip Text="Edit">
+                                <MudIconButton Size="@Size.Small"
+                                               Icon="@Icons.Material.Outlined.Edit"
+                                               Color="Color.Info"
+                                               OnClick="@context.Actions.StartEditingItemAsync" />
+                            </MudTooltip>
+                            <MudTooltip Text="Delete">
+                                <MudIconButton Size="@Size.Small"
+                                               Icon="@Icons.Material.Outlined.Delete"
+                                               Color="Color.Error" />
+                            </MudTooltip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="py-12">
+                        <MudIcon Icon="@Icons.Material.Outlined.FolderOff" Size="Size.Large" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6" Color="Color.Primary">No reports found</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Primary">Click "Add Report" or "Refresh" to fetch latest data.</MudText>
+                    </MudStack>
+                </NoRecordsContent>
+
+                <PagerContent>
+                    <MudDataGridPager T="ReportMasterDto" PageSizeOptions="new[] { 10, 20, 50, 100 }" />
+                </PagerContent>
+            </MudDataGrid>
+
+        </MudTabPanel>
+
+        @* Individual Report Tabs *@
+        @foreach (var tab in _openTabs)
+        {
+            <MudTabPanel Text="@(string.IsNullOrEmpty(tab.Model.Name) ? "Unsaved Report" : tab.Model.Name)"
+                         Icon="@Icons.Material.Outlined.Edit"
+                         ID="@tab.TabId">
+                <ReportMasterDetailView3 Model="tab.Model" OnSave="() => SaveReport(tab.Model)" />
+            </MudTabPanel>
+        }
+
+    </MudDynamicTabs>
+</MudPaper>
 
 @code {
+    private int _activeTabIndex = 0;
+    private List<ReportTabItem> _openTabs = new();
+    public class ReportTabItem
+    {
+        public string TabId { get; set; } = Guid.NewGuid().ToString();
+        public ReportMasterDto Model { get; set; } = new();
+    }
+
+    private string _searchString = string.Empty;
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Dispatcher.Dispatch(new LoadReportsAction());
+        RefreshData();
     }
+
+    private void RefreshData()
+    {
+        Dispatcher.Dispatch(new FetchReportMasterAction());
+    }
+
+    private void OpenBlankReport()
+    {
+        _openTabs.Add(new ReportTabItem { Model = new ReportMasterDto() });
+        _activeTabIndex = _openTabs.Count;
+    }
+
+    private void OpenReportInTab(ReportMasterDto dto)
+    {
+        var existingTab = _openTabs.FirstOrDefault(t => t.Model.Id == dto.Id);
+        if (existingTab != null)
+        {
+            _activeTabIndex = _openTabs.IndexOf(existingTab) + 1;
+            return;
+        }
+
+        var tabModel = new ReportMasterDto
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Description = dto.Description,
+            ReportNamePattern = dto.ReportNamePattern,
+            ReportDirectory = dto.ReportDirectory,
+            IsActive = dto.IsActive,
+            Parameters = dto.Parameters.ToList(),
+            Templates = dto.Templates.ToList()
+        };
+
+        _openTabs.Add(new ReportTabItem { Model = tabModel });
+        _activeTabIndex = _openTabs.Count;
+    }
+
+    private void CloseTab(MudTabPanel panel)
+    {
+        var tabToRemove = _openTabs.FirstOrDefault(t => t.TabId == (string)panel.ID);
+        if (tabToRemove != null)
+        {
+            _openTabs.Remove(tabToRemove);
+        }
+    }
+
+    private void SaveReport(ReportMasterDto dto)
+    {
+        //Dispatcher.Dispatch(new SaveReportMasterAction(dto));
+        //Snackbar.Add($"Report '{dto.Name}' saved successfully.", Severity.Success);
+    }
+
+    private Func<ReportMasterDto, bool> FilterFunc => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.Name?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        if (x.ReportNamePattern?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        if (x.ReportDirectory?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        return false;
+    };
 
     private async Task OpenCreateDialog()
     {
         var dialog = await DialogService.ShowAsync<CreateReportMaster>();
         var result = await dialog.Result;
-        if (result != null && !result.Canceled && result.Data is CreateReportTemplateRequest dto)
+        if (result != null && !result.Canceled && result.Data is SaveReportMasterDto dto)
         {
-            //Dispatcher.Dispatch(new CreateTemplateAction(dto));
-            Dispatcher.Dispatch(new LoadReportsAction());
+            Dispatcher.Dispatch(new SaveReportMasterAction(dto));
+            RefreshData();
         }
     }
 }

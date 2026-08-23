@@ -4,6 +4,6 @@ namespace Smbc.Risk.ReportingEngine.Domain.Services;
 
 public interface IReportManagementService
 {
-    Task<IEnumerable<ReportMasterDto>> GetAllReportsAsync(CancellationToken cancellationToken = default);
-    Task<ReportMasterDto> CreateReportAsync(ReportMasterDto dto, CancellationToken cancellationToken = default);
+    Task<IEnumerable<ReportMasterDto>> GetAllReportsAsync(bool includeInactive = false, CancellationToken cancellationToken = default);
+    Task<ReportMasterDto> CreateReportAsync(SaveReportMasterDto dto, CancellationToken cancellationToken = default);
 }

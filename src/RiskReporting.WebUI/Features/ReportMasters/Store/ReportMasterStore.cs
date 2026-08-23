@@ -1,7 +1,7 @@
 ﻿using Fluxor;
 using MudBlazor;
 using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
-using Smbc.Risk.ReportingEngine.WebUI.Features.ReportTemplates.Store;
+using static System.Net.WebRequestMethods;
 
 namespace Smbc.Risk.ReportingEngine.WebUI.Features.ReportMasters.Store;
 
@@ -12,7 +12,6 @@ public record ReportMasterState(bool IsLoading, IEnumerable<ReportMasterDto> Rep
 public class ReportMasterFeature : Feature<ReportMasterState>
 {
     public override string GetName() => nameof(ReportMasterFeature);
-
     protected override ReportMasterState GetInitialState()
     {
         return new ReportMasterState(
@@ -24,20 +23,24 @@ public class ReportMasterFeature : Feature<ReportMasterState>
 }
 
 // Actions for loading reports
-public record LoadReportsAction;
-public record LoadReportsSuccessAction(IEnumerable<ReportMasterDto> Reports);
+public record FetchReportMasterAction(bool IncludeInactive = false);
+public record FetchReportMasterSuccessAction(IEnumerable<ReportMasterDto> Reports);
+
+public record SaveReportMasterAction(SaveReportMasterDto Dto);
+public record DeleteReportMasterAction(long Id);
+
 
 // Reducers for handling state changes in response to actions
 public static class ReportMasterReducers
 {
     [ReducerMethod]
-    public static ReportMasterState OnLoad(ReportMasterState state, LoadReportsAction action) 
+    public static ReportMasterState OnLoad(ReportMasterState state, FetchReportMasterAction action) 
     {
         return state with { IsLoading = true, ErrorMessage = null };
     }
 
     [ReducerMethod]
-    public static ReportMasterState OnSuccess(ReportMasterState state, LoadReportsSuccessAction action) 
+    public static ReportMasterState OnSuccess(ReportMasterState state, FetchReportMasterSuccessAction action) 
     {
         return state with { IsLoading = false, Reports = action.Reports }; 
     }
@@ -51,13 +54,12 @@ public class ReportMasterEffects(HttpClient httpClient, IConfiguration configura
     private string? apiEndpoint => $"{_configuration?.GetValue<string>("REPORT_MANAGEMENT_API")}ReportMaster";
 
     [EffectMethod]
-    public async Task HandleLoadReports(LoadReportsAction action, IDispatcher dispatcher)
+    public async Task HandleLoadReports(FetchReportMasterAction action, IDispatcher dispatcher)
     {
-        
         try
         {
             var reports = await _httpClient.GetFromJsonAsync<IEnumerable<ReportMasterDto>>(apiEndpoint);
-            dispatcher.Dispatch(new LoadReportsSuccessAction(reports ?? []));
+            dispatcher.Dispatch(new FetchReportMasterSuccessAction(reports ?? []));
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -68,5 +70,27 @@ public class ReportMasterEffects(HttpClient httpClient, IConfiguration configura
         {
             _snackbar.Add($"Unable to load reports: {ex.Message}", Severity.Error);
         }
+    }
+
+    [EffectMethod]
+    public async Task HandleSave(SaveReportMasterAction action, IDispatcher dispatcher)
+    {
+        if (action.Dto.Id.HasValue && action.Dto.Id > 0)
+        {
+            await _httpClient.PutAsJsonAsync($"{apiEndpoint}/{action.Dto.Id}", action.Dto);
+        }
+        else
+        {
+            await _httpClient.PostAsJsonAsync(apiEndpoint, action.Dto);
+        }
+
+        dispatcher.Dispatch(new FetchReportMasterAction());
+    }
+
+    [EffectMethod]
+    public async Task HandleDelete(DeleteReportMasterAction action, IDispatcher dispatcher)
+    {
+        await _httpClient.DeleteAsync($"api/ReportMaster/{action.Id}");
+        dispatcher.Dispatch(new FetchReportMasterAction());
     }
 }

@@ -10,4 +10,5 @@ public record ReportMetricDto
     public string SqlQuery { get; set; } = string.Empty;
     public DatabaseType DatabaseType { get; set; } = DatabaseType.SqlServer;
     public int? MaxRows { get; set; }
+    public bool IsActive { get; set; } = true;
 }

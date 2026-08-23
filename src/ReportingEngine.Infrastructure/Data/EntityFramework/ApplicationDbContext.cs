@@ -11,11 +11,12 @@ namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework;
 /// </summary>
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
+    public DbSet<ReportMaster> ReportMasters => Set<ReportMaster>();
+    public DbSet<ReportParameter> ReportParameters => Set<ReportParameter>();
+    public DbSet<ReportTemplate> ReportTemplates => Set<ReportTemplate>();
+    public DbSet<ReportMetric> ReportMetrics => Set<ReportMetric>();
+
     public DbSet<SystemParameterType> SystemParameterTypes { get; set; }
-    public DbSet<ReportMaster> ReportMasters { get; set; }
-    public DbSet<ReportTemplate> ReportTemplates { get; set; }
-    public DbSet<ReportMetric> ReportMetrics { get; set; }
-    public DbSet<ReportParameter> ReportParameters { get; set; }
     public DbSet<ReportRunnerQueue> ReportRunnerQueues { get; set; }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

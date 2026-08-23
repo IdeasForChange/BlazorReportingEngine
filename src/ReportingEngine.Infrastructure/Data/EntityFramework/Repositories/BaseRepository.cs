@@ -10,20 +10,25 @@ public abstract class BaseRepository<T>(ApplicationDbContext dbContext) : IBaseR
     protected readonly ApplicationDbContext _dbContext = dbContext;
 
     // READ & READ ALL
-    public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<T>> GetAllAsync(bool includeInactive = false, CancellationToken cancellationToken = default)
     {
-        var resut = await _dbContext.Set<T>().AsNoTracking().ToListAsync(cancellationToken);
-        return resut;
+        var query = _dbContext.Set<T>().AsNoTracking();
+        if (!includeInactive)
+        {
+            query = query.Where(e => e.IsActive);
+        }
+        var results = await query.ToListAsync(cancellationToken);
+        return results;
     }
 
-    public async Task<T?> GetByIdAsync<TId>(TId id, CancellationToken cancellationToken = default)
+    public virtual async Task<T?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        var resut = await _dbContext.Set<T>().FindAsync([id], cancellationToken: cancellationToken);
-        return resut;
+        var result = await _dbContext.Set<T>().FindAsync([id], cancellationToken: cancellationToken);
+        return result;
     }
 
     // CREATE
-    public async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
+    public virtual async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
     {
         await _dbContext.Set<T>().AddAsync(entity, cancellationToken);
         await _dbContext.SaveChangesAsync();
@@ -31,7 +36,7 @@ public abstract class BaseRepository<T>(ApplicationDbContext dbContext) : IBaseR
     }
 
     // UPDATE 
-    public async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default)
+    public virtual async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default)
     {
         _dbContext.Set<T>().Update(entity);
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -39,7 +44,7 @@ public abstract class BaseRepository<T>(ApplicationDbContext dbContext) : IBaseR
     }
 
     // DELETE 
-    public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -57,13 +62,13 @@ public abstract class BaseRepository<T>(ApplicationDbContext dbContext) : IBaseR
     }
 
     // COUNT 
-    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         return await _dbContext.Set<T>().CountAsync(cancellationToken);
     }
 
     // EXISTS
-    public async Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Set<T>().AnyAsync(e => e.Id == id, cancellationToken);
     }

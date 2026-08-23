@@ -13,4 +13,7 @@ public class ReportMaster : EntityBase
     public string? Description { get; set; }
     public string ReportNamePattern { get; set; } = string.Empty;
     public string ReportDirectory { get; set; } = string.Empty;
+
+    public ICollection<ReportParameter> Parameters { get; set; } = [];
+    public ICollection<ReportTemplate> Templates { get; set; } = [];
 }

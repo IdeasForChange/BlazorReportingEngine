@@ -9,8 +9,6 @@ public class ReportMetric : EntityBase
     public string NamedRange { get; set; } = string.Empty;
     public string SqlQuery { get; set; } = string.Empty;
     public DatabaseType DatabaseType { get; set; } = DatabaseType.SqlServer;
-
-    // Maximum amount of data to fetch. NULL or -1 means ALL
     public int? MaxRows { get; set; }
 
     public ReportTemplate? ReportTemplate { get; set; }

@@ -13,26 +13,29 @@ public class ReportTemplateConfiguration : IEntityTypeConfiguration<ReportTempla
 
         builder.HasKey(e => e.Id);
 
-        builder.Property(e => e.Name).IsRequired().HasMaxLength(255);
-        builder.Property(e => e.TemplatePath).IsRequired().HasMaxLength(1000);
-        builder.Property(e => e.ReportDirectory).IsRequired().HasMaxLength(1000);
-        builder.Property(e => e.ReportNamePattern).IsRequired().HasMaxLength(255);
-        builder.Property(e => e.CreatedBy).HasMaxLength(256);
-        builder.Property(e => e.UpdatedBy).HasMaxLength(256);
+        builder.Property(e => e.ReportId).IsRequired();
+        builder.Property(e => e.TemplateFileName).HasMaxLength(1000).IsRequired();
+        builder.Property(e => e.TemplatePath).HasMaxLength(1000).IsRequired();
+        builder.Property(e => e.TemplateVersion).HasDefaultValue(1).IsRequired();
 
+        // Common Table Items
+        builder.Property(e => e.EntityVersion).HasDefaultValue(1).IsRequired();
+        builder.Property(e => e.EntityWrittenAt).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+
+        // Audit Flags
+        builder.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
+        builder.Property(e => e.CreatedBy).HasMaxLength(256).HasDefaultValue("System");
+        builder.Property(e => e.CreatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+        builder.Property(e => e.UpdatedBy).HasMaxLength(256).HasDefaultValue("System");
+        builder.Property(e => e.UpdatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+
+        // Foreign Key Index
+        builder.HasIndex(e => e.ReportId);
+
+        // Relationships
         builder.HasMany(e => e.Metrics)
-            .WithOne(e => e.ReportTemplate)
-            .HasForeignKey(e => e.ReportTemplateId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(e => e.Parameters)
-            .WithOne(e => e.ReportTemplate)
-            .HasForeignKey(e => e.ReportTemplateId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(e => e.QueueItems)
-            .WithOne(e => e.ReportTemplate)
-            .HasForeignKey(e => e.ReportTemplateId)
+            .WithOne(m => m.ReportTemplate)
+            .HasForeignKey(m => m.ReportTemplateId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

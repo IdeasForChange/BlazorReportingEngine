@@ -7,8 +7,8 @@ namespace Smbc.Risk.Core.Domain.Shared.Repositories;
 /// </summary>
 public interface IBaseRepository<T> where T : class
 {   
-    Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<T?> GetByIdAsync<TId>(TId id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> GetAllAsync(bool includeInactive = false, CancellationToken cancellationToken = default);
+    Task<T?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
     Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default);
     Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default);

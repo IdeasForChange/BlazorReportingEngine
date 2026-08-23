@@ -9,9 +9,8 @@ public class ReportMappingProfile : Profile
     public ReportMappingProfile()
     {
         CreateMap<ReportMaster, ReportMasterDto>().ReverseMap();
-
+        CreateMap<ReportParameter, ReportParameterDto>().ReverseMap();
         CreateMap<ReportTemplate, ReportTemplateDto>().ReverseMap();
         CreateMap<ReportMetric, ReportMetricDto>().ReverseMap();
-        CreateMap<ReportParameter, ReportParameterDto>().ReverseMap();
     }
 }

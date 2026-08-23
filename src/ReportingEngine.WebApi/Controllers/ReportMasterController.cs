@@ -13,14 +13,14 @@ public class ReportMasterController(IReportManagementService service) : Controll
     private readonly IReportManagementService _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(bool includeInactive = false, CancellationToken cancellationToken = default)
     {
-        var reports = await _service.GetAllReportsAsync(cancellationToken);
+        var reports = await _service.GetAllReportsAsync(includeInactive, cancellationToken);
         return Ok(reports);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] ReportMasterDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] SaveReportMasterDto dto, CancellationToken cancellationToken)
     {
         var id = await _service.CreateReportAsync(dto, cancellationToken);
         return CreatedAtAction(nameof(GetAll), new { id }, id);
