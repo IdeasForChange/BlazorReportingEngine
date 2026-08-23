@@ -1,10 +1,10 @@
 ﻿@page "/report-management"
 
-@using Smbc.Risk.ReportingEngine.WebUI.Shared.Components
+<PageHeader 
+    PageTitle="Master Report Management" 
+    PageSubTitle="Manage master report templates and their associated metrics." />
 
-<PageHeader PageTitle="Report Management" PageSubTitle="Manage report templates and their associated metrics." />
-
-<ReportMasterList />
+<ListReportMaster />
 
 @code {
 

@@ -12,7 +12,7 @@
                     ApplyEffectsToContainer="true"
                     Class="pa-0"
                     Elevation="0"
-                    AddIconStyle="visibility: hidden;"
+                    AddIconClass="hidden"
                     HeaderPosition="TabHeaderPosition.After">
 
         @* Main Master Grid Tab *@
@@ -130,7 +130,7 @@
             <MudTabPanel Text="@(string.IsNullOrEmpty(tab.Model.Name) ? "Unsaved Report" : tab.Model.Name)"
                          Icon="@Icons.Material.Outlined.Edit"
                          ID="@tab.TabId">
-                <ReportMasterDetailView3 Model="tab.Model" OnSave="() => SaveReport(tab.Model)" />
+                <EditReportMaster Model="tab.Model" OnSave="() => SaveReport(tab.Model)" />
             </MudTabPanel>
         }
 
@@ -192,17 +192,12 @@
 
     private void CloseTab(MudTabPanel panel)
     {
-        var tabToRemove = _openTabs.FirstOrDefault(t => t.TabId == (string)panel.ID);
+        string tabId = panel.ID == null ? string.Empty : (string) panel.ID;
+        var tabToRemove = _openTabs.FirstOrDefault(t => t.TabId == tabId);
         if (tabToRemove != null)
         {
             _openTabs.Remove(tabToRemove);
         }
-    }
-
-    private void SaveReport(ReportMasterDto dto)
-    {
-        //Dispatcher.Dispatch(new SaveReportMasterAction(dto));
-        //Snackbar.Add($"Report '{dto.Name}' saved successfully.", Severity.Success);
     }
 
     private Func<ReportMasterDto, bool> FilterFunc => x =>
@@ -231,5 +226,11 @@
             Dispatcher.Dispatch(new SaveReportMasterAction(dto));
             RefreshData();
         }
+    }
+
+    private void SaveReport(ReportMasterDto dto)
+    {
+        //Dispatcher.Dispatch(new SaveReportMasterAction(dto));
+        //Snackbar.Add($"Report '{dto.Name}' saved successfully.", Severity.Success);
     }
 }

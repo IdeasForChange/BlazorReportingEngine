@@ -244,9 +244,6 @@
                                 <MudExpansionPanel Text="@metric.NamedRange">
                                     <MudPaper Class="pa-3 mb-3 rounded-lg" Outlined="true" Elevation="0" Style="border-left: 4px solid var(--mud-palette-primary) !important;">
                                         <MudGrid Class="mb-2">
-@*                                             <MudItem xs="12" sm="4">
-                                                <MudTextField @bind-Value="metric.NamedRange" Label="Named Range" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true" Disabled="true" />
-                                            </MudItem> *@
                                             <MudItem xs="12" sm="6">
                                                 <MudSelect T="DatabaseType" @bind-Value="metric.DatabaseType" Label="Target DB" Variant="Variant.Outlined" Margin="Margin.Dense">
                                                     @foreach (DatabaseType dbType in Enum.GetValues<DatabaseType>())

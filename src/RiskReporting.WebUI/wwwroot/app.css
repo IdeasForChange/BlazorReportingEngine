@@ -54,6 +54,12 @@
     font-display: swap;
 }
 
+.hidden {
+    display: none !important;
+    visibility: hidden;
+}   
+
+
 body {
     font-family: "Inter LT",Inter,Arial,sans-serif;
     font-size: 14px;
