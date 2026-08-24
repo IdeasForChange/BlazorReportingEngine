@@ -16,14 +16,14 @@
 
 <div class="d-flex justify-space-between align-center mb-6">
     <div>
-        <PageHeader PageTitle="Database Configurations"
+        <PageHeader PageTitle="Database Connection"
                     PageSubTitle="Manage connection strings, authentication modes, and environments." />
     </div>
     <MudButton Variant="Variant.Filled" 
                Color="Color.Primary" 
                StartIcon="@Icons.Material.Filled.Add" 
                OnClick="OpenAddDialog">
-        Add Configuration
+        Add Connection
     </MudButton>
 </div>
 
@@ -114,6 +114,15 @@
                 </CellTemplate>
             </TemplateColumn>
         </Columns>
+
+        <NoRecordsContent>
+            <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="py-12">
+                <MudIcon Icon="@Icons.Material.Outlined.Dataset" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h6" Color="Color.Primary">No Database Connections found</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Primary">Click "Add Connection" or "Refresh" to fetch latest data.</MudText>
+            </MudStack>
+        </NoRecordsContent>
+
         <PagerContent>
             <MudDataGridPager T="DatabaseConnectionDto" />
         </PagerContent>

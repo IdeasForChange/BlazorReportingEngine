@@ -41,7 +41,7 @@ public class DatabaseConnectionEffects(HttpClient httpClient, IConfiguration con
     private readonly HttpClient _httpClient = httpClient;
     private readonly IConfiguration _configuration = configuration;
     private readonly ISnackbar _snackbar = snackbar;
-    private string? apiEndpoint => $"{_configuration?.GetValue<string>("REPORT_MANAGEMENT_API")}DatabaseConenction";
+    private string? apiEndpoint => $"{_configuration?.GetValue<string>("REPORT_MANAGEMENT_API")}DatabaseConnection";
 
     [EffectMethod]
     public async Task HandleFetch(FetchDatabaseConnectionAction action, IDispatcher dispatcher)
@@ -67,7 +67,7 @@ public class DatabaseConnectionEffects(HttpClient httpClient, IConfiguration con
     {
         try
         {
-            if (action.Connection.Id <= 0)
+            if (action.Connection.Id == null)
             {
                 await _httpClient.PostAsJsonAsync(apiEndpoint, action.Connection);
             }
