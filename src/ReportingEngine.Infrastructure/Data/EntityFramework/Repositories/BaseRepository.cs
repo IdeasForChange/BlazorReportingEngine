@@ -4,7 +4,7 @@ using Smbc.Risk.Core.Domain.Shared.Repositories;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
 
-public abstract class BaseRepository<T>(ApplicationDbContext dbContext) : IBaseRepository<T> 
+public abstract class BaseRepository<T>(ApplicationDbContext dbContext) : IBaseRepository<T>
     where T : EntityBase
 {
     protected readonly ApplicationDbContext _dbContext = dbContext;

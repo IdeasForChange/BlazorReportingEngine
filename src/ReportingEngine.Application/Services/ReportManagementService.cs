@@ -50,17 +50,16 @@ public class ReportManagementService(
             Description = dto.Description,
             ReportDirectory = dto.ReportDirectory,
             ReportNamePattern = dto.ReportNamePattern,
-            Templates =
+            ReportTemplates =
             [
                 new()
                 {
                     TemplateFileName = dto.FileName,
                     TemplatePath = filePath,
                     TemplateVersion = 1,
-                    Metrics = [.. namedRanges.Select(nr => new ReportMetric
+                    ReportMetrics = [.. namedRanges.Select(nr => new ReportMetric
                     {
-                        NamedRange = nr,
-                        DatabaseType = DatabaseType.SqlServer
+                        NamedRange = nr
                     })]
                 }
             ]
@@ -69,5 +68,30 @@ public class ReportManagementService(
         await _reportMasterRepository.CreateAsync(report, cancellationToken);
         return _mapper.Map<ReportMasterDto>(report);
     }
+
+    public async Task<ReportMasterDto?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _reportMasterRepository.GetByIdAsync(id, cancellationToken);
+        return _mapper.Map<ReportMasterDto>(entity);
+    }
+
+    public async Task<ReportMasterDto> UpdateAsync(ReportMasterDto dto, string user, CancellationToken cancellationToken = default)
+    {
+        var existing = await _reportMasterRepository.GetByIdAsync(dto.Id, cancellationToken);
+        if (existing != null)
+        {
+            _mapper.Map(dto, existing);
+            existing.UpdatedBy = user;
+
+            await _reportMasterRepository.UpdateAsync(existing, cancellationToken);
+            return _mapper.Map<ReportMasterDto>(existing);
+        }
+
+        throw new KeyNotFoundException("Report Master not found.");
+    }
+
+    public async Task DeleteAsync(long id, bool hardDelete = false, CancellationToken cancellationToken = default)
+    {
+        await _reportMasterRepository.DeleteOrInactivateAsync(id, hardDelete, cancellationToken);
+    }
 }
-    

@@ -13,7 +13,7 @@ public class ReportTemplatesController(IReportTemplateService service) : Control
     private readonly IReportTemplateService _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken = default) 
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken = default)
     {
         var results = await _service.GetAllReportsAsync(cancellationToken);
         return Ok(results);

@@ -1,0 +1,148 @@
+﻿@using MudBlazor
+@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+@using Smbc.Risk.ReportingEngine.Domain.Shared.Enums
+
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_isValid">
+            <MudGrid>
+                @* Connection Name & Environment *@
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="Model.ConnectionName"
+                                  Label="Connection Name"
+                                  Required="true"
+                                  RequiredError="Connection name is required"
+                                  Validation="@(new Func<string, string?>(ValidateNameUniqueness))"
+                                  Disabled="Model.IsReadOnly" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="EnvironmentType"
+                               Label="Environment"
+                               @bind-Value="Model.Environment"
+                               Disabled="Model.IsReadOnly">
+                        @foreach (EnvironmentType env in Enum.GetValues(typeof(EnvironmentType)))
+                        {
+                            <MudSelectItem Value="@env">@env.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                @* Database Type & Timeout *@
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="DatabaseType"
+                               Label="Database Type"
+                               @bind-Value="Model.DatabaseType"
+                               Disabled="Model.IsReadOnly">
+                        @foreach (DatabaseType dbType in Enum.GetValues(typeof(DatabaseType)))
+                        {
+                            <MudSelectItem Value="@dbType">@dbType.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudNumericField @bind-Value="Model.TimeoutSeconds"
+                                     Label="Timeout (Seconds)"
+                                     Min="1"
+                                     Max="300"
+                                     Disabled="Model.IsReadOnly" />
+                </MudItem>
+
+                @* Host & Database Name *@
+                <MudItem xs="12" sm="8">
+                    <MudTextField @bind-Value="Model.ServerHost"
+                                  Label="Server / Host"
+                                  Required="true"
+                                  Disabled="Model.IsReadOnly" />
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudNumericField @bind-Value="Model.Port"
+                                     Label="Port"
+                                     Disabled="Model.IsReadOnly" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.DatabaseName"
+                                  Label="Database Name"
+                                  Required="true"
+                                  Disabled="Model.IsReadOnly" />
+                </MudItem>
+
+                @* Authentication Settings *@
+                <MudItem xs="12">
+                    <MudRadioGroup T="DatabaseAuthenticationType"
+                                   @bind-Value="Model.AuthenticationMethod"
+                                   Disabled="Model.IsReadOnly">
+                        <MudRadio Value="DatabaseAuthenticationType.Integrated" Color="Color.Primary">Integrated Authentication</MudRadio>
+                        <MudRadio Value="DatabaseAuthenticationType.Individual" Color="Color.Primary">Individual User Credentials</MudRadio>
+                    </MudRadioGroup>
+                </MudItem>
+
+                @if (Model.AuthenticationMethod == DatabaseAuthenticationType.Individual)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="Model.UserId"
+                                      Label="User ID"
+                                      Required="true"
+                                      RequiredError="User ID is required"
+                                      Disabled="Model.IsReadOnly" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="Model.Password"
+                                      Label="Password"
+                                      InputType="InputType.Password"
+                                      Required="true"
+                                      RequiredError="Password is required"
+                                      Disabled="Model.IsReadOnly" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        @if (!Model.IsReadOnly)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Save Configuration</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public DatabaseConnectionDto Model { get; set; } = new();
+    [Parameter] public List<DatabaseConnectionDto> ExistingConfigs { get; set; } = new();
+    [Parameter] public bool IsEdit { get; set; }
+
+    private MudForm _form = default!;
+    private bool _isValid;
+
+    private string? ValidateNameUniqueness(string name)
+    {
+        var duplicateExists = ExistingConfigs.Any(c =>
+            c.Id != Model.Id &&
+            c.Environment == Model.Environment &&
+            c.ConnectionName.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+        return duplicateExists
+            ? $"A connection named '{name}' already exists in {Model.Environment}."
+            : null;
+    }
+
+    private async Task Submit()
+    {
+        await _form.ValidateAsync();
+        if (_isValid)
+        {
+            MudDialog.Close(DialogResult.Ok(Model));
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

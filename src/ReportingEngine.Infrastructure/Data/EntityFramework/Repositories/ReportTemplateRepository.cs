@@ -1,12 +1,10 @@
-﻿using ClosedXML.Excel;
-using Microsoft.EntityFrameworkCore;
-using Smbc.Risk.ReportingEngine.Domain.Entities;
+﻿using Smbc.Risk.ReportingEngine.Domain.Entities;
 using Smbc.Risk.ReportingEngine.Domain.Repositories;
 using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
 
-internal class ReportTemplateRepository(ApplicationDbContext dbContext) 
+internal class ReportTemplateRepository(ApplicationDbContext dbContext)
     : BaseRepository<ReportTemplate>(dbContext), IReportTemplateRepository
 {
     public async Task<long> UploadTemplateAsync(

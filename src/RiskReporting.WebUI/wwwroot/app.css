@@ -1,14 +1,9 @@
-﻿:root {
-    --bs-green: #198754;
-    --bs-teal: #20c997;
-}
-
-/* ------------------------------------------------------------ *\
+﻿/* ------------------------------------------------------------ *\
     Fonts
 \* ------------------------------------------------------------ */
 @font-face {
     font-family: 'Inter UT';
-    src: url('../fonts/Inter-Thin.woff2') format('woff2');
+    src: url('fonts/Inter-Thin.woff2') format('woff2');
     font-weight: 100;
     font-style: normal;
     font-display: swap;
@@ -16,7 +11,7 @@
 
 @font-face {
     font-family: 'Inter LT';
-    src: url('../fonts/Inter-ExtraLight.woff2') format('woff2');
+    src: url('fonts/Inter-ExtraLight.woff2') format('woff2');
     font-weight: 200;
     font-style: normal;
     font-display: swap;
@@ -24,7 +19,7 @@
 
 @font-face {
     font-family: 'Inter';
-    src: url('../fonts/Inter-Light.woff2') format('woff2');
+    src: url('fonts/Inter-Light.woff2') format('woff2');
     font-weight: 300;
     font-style: normal;
     font-display: swap;
@@ -32,7 +27,7 @@
 
 @font-face {
     font-family: 'Inter';
-    src: url('../fonts/Inter-Regular.woff2') format('woff2');
+    src: url('fonts/Inter-Regular.woff2') format('woff2');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -40,7 +35,7 @@
 
 @font-face {
     font-family: 'Inter LT Std';
-    src: url('../fonts/Inter-Light.woff2') format('woff2');
+    src: url('fonts/Inter-Light.woff2') format('woff2');
     font-weight: 300;
     font-style: normal;
     font-display: swap;
@@ -48,23 +43,60 @@
 
 @font-face {
     font-family: 'Inter LT Std';
-    src: url('../fonts/Inter-Regular.woff2') format('woff2');
+    src: url('fonts/Inter-Regular.woff2') format('woff2');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
+}
+
+/* 2. Light Mode Theme Variables */
+:root {
+    --mud-palette-appbar-background: #004b35;
+    --mud-palette-appbar-text: #FFFFFF;
+
+    --bs-green: #198754;
+    --bs-teal: #20c997;
+    --mud-typography-default-family: 'Inter LT Std', sans-serif;
+    /* Brand Colors */
+    /*--mud-palette-primary: #004b35;
+    --mud-palette-primary-text: #FFFFFF;
+    --mud-palette-secondary: #198754;
+    --mud-palette-tertiary: #20c997;
+    --mud-palette-info: #20c997;*/
+    /* Surface & Backgrounds */
+    /*--mud-palette-background: #F8F9FA;
+    --mud-palette-drawer-background: #FFFFFF;
+    --mud-palette-text-primary: #212529;*/
+    /* Custom Shadow Variable for Light Mode */
+    --h1-text-shadow-color: rgba(0, 0, 0, 0.45);
+}
+
+/* 3. Dark Mode Theme Variable Overrides */
+.mud-theme-dark {
+    --mud-palette-appbar-background: #003424;
+    --mud-palette-appbar-text: #E9ECEF;
+
+/*    --mud-palette-primary: #20c997;
+    --mud-palette-primary-text: #000000;
+    --mud-palette-secondary: #198754;
+    --mud-palette-tertiary: #004b35;
+    --mud-palette-info: #20c997;
+    --mud-palette-background: #121212;
+    --mud-palette-drawer-background: #1A1A1A;
+    --mud-palette-text-primary: #E9ECEF;
+*/    /* Custom Shadow Variable for Dark Mode */
+    --h1-text-shadow-color: rgba(0, 0, 0, 0.85);
+}
+
+/* 2. Global Typography & Dynamic H1 Shadow */
+body, html {
+    font-family: 'Inter LT Std', 'Helvetica', 'Arial', 'sans-serif' !important;
 }
 
 .hidden {
     display: none !important;
     visibility: hidden;
 }   
-
-
-body {
-    font-family: "Inter LT",Inter,Arial,sans-serif;
-    font-size: 14px;
-    line-height: 1.42857143;
-}
 
 .sql-editor-wrapper {
     height: 220px;

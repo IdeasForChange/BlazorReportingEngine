@@ -12,15 +12,14 @@ public class ReportMasterConfiguration : IEntityTypeConfiguration<ReportMaster>
         builder.ToTable("ReportMaster");
 
         builder.HasKey(e => e.Id);
+        // Common Table Items
+        builder.Property(e => e.EntityVersion).HasDefaultValue(1).IsRequired();
+        builder.Property(e => e.EntityWrittenAt).HasDefaultValueSql("GETUTCDATE()").IsRequired();
 
         builder.Property(e => e.Name).IsRequired().HasMaxLength(255);
         builder.Property(e => e.Description).HasMaxLength(1000);
         builder.Property(e => e.ReportNamePattern).IsRequired().HasMaxLength(255);
         builder.Property(e => e.ReportDirectory).IsRequired().HasMaxLength(1000);
-
-        // Common Table Items
-        builder.Property(e => e.EntityVersion).HasDefaultValue(1).IsRequired();
-        builder.Property(e => e.EntityWrittenAt).HasDefaultValueSql("GETUTCDATE()").IsRequired();
 
         // Audit Flags
         builder.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
@@ -30,16 +29,14 @@ public class ReportMasterConfiguration : IEntityTypeConfiguration<ReportMaster>
         builder.Property(e => e.UpdatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
 
         // Relationships
-        builder.HasMany(e => e.Parameters)
-            .WithOne(p => p.Report)
-            .HasForeignKey(p => p.ReportId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .HasConstraintName("FK_ReportParameter_ReportMaster");
+        builder.HasMany(e => e.ReportParameters)
+            .WithOne(p => p.ReportMaster)
+            .HasForeignKey(p => p.ReportMasterId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(e => e.Templates)
-            .WithOne(t => t.Report)
-            .HasForeignKey(t => t.ReportId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .HasConstraintName("FK_ReportTemplate_ReportMaster");
+        builder.HasMany(e => e.ReportTemplates)
+            .WithOne(t => t.ReportMaster)
+            .HasForeignKey(t => t.ReportMasterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

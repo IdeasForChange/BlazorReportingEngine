@@ -1,6 +1,6 @@
 ﻿namespace Smbc.Risk.Core.Domain.Shared.Exceptions;
 
-public class DomainException : Exception 
+public class DomainException : Exception
 {
     public DomainException() { }
     public DomainException(string? message) : base(message) { }

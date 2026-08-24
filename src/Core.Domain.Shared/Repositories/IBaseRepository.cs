@@ -1,12 +1,10 @@
-using System.Linq.Expressions;
-
 namespace Smbc.Risk.Core.Domain.Shared.Repositories;
 
 /// <summary>
 /// Generic repository interface following Repository Pattern.
 /// </summary>
 public interface IBaseRepository<T> where T : class
-{   
+{
     Task<IEnumerable<T>> GetAllAsync(bool includeInactive = false, CancellationToken cancellationToken = default);
     Task<T?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
     Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default);

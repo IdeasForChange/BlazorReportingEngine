@@ -4,7 +4,7 @@ using Smbc.Risk.ReportingEngine.Domain.Repositories;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
 
-public class SystemParameterTypeRepository(ApplicationDbContext dbContext) 
+public class SystemParameterTypeRepository(ApplicationDbContext dbContext)
     : BaseRepository<SystemParameterType>(dbContext), ISystemParameterTypeRepository
 {
     public async Task<bool> ExistsByCode(string code, long? excludeId = null, CancellationToken cancellationToken = default)

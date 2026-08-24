@@ -1,4 +1,187 @@
 ﻿@page "/"
 
+@inherits FluxorComponent
+@inject ISnackbar Snackbar
+
 <PageHeader PageTitle="Dashboard" 
             PageSubTitle="A database driven reporting engine written." />
+
+@* Top KPI Statistics Cards *@
+<MudGrid Class="mb-6">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">BUSINESS DATE</MudText>
+                    <MudText Typo="Typo.h5" Bold="true">@_businessDate.ToString("yyyy-MM-dd")</MudText>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Primary" Size="Size.Large" />
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">REPORTS RUN TODAY</MudText>
+                    <MudText Typo="Typo.h5" Bold="true">@_reports.Count</MudText>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.Assessment" Color="Color.Info" Size="Size.Large" />
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">SUCCESSFUL</MudText>
+                    <MudText Typo="Typo.h5" Bold="true" Color="Color.Success">
+                        @_reports.Count(r => r.Status == ReportStatus.Completed)
+                    </MudText>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">FAILURES</MudText>
+                    <MudText Typo="Typo.h5" Bold="true" Color="Color.Error">
+                        @_reports.Count(r => r.Status == ReportStatus.Failed)
+                    </MudText>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" />
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@* Chart & Quick Analytics Section *@
+<MudGrid Class="mb-6">
+    <MudItem xs="12" md="8">
+        <MudPaper Class="pa-4" Elevation="2">
+            <h3>Execution Success vs Failure Rate</h3>
+            <p class="mb-4">Weekly compilation breakdown of scheduled vs automated reporting jobs.</p>
+
+            <MudChart ChartType="ChartType.Bar"
+                      ChartSeries="@_chartSeries"
+                      XAxisLabels="@_chartXAxis"
+                      Width="100%"
+                      Height="280px" />
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4" Elevation="2" Style="height: 100%;">
+            <h3>System Status</h3>
+            <p class="mb-4">Service worker status.</p>
+            <MudList T="string" Dense="true">
+                <MudListItem Icon="@Icons.Material.Filled.Dns" IconColor="Color.Success">
+                    Engine Worker #1: Active
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.Dns" IconColor="Color.Success">
+                    Engine Worker #2: Active
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.Storage" IconColor="Color.Success">
+                    DB Server Latency: 14ms
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.CloudSync" IconColor="Color.Info">
+                    Queue Backlog: 1 job running
+                </MudListItem>
+            </MudList>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    public enum ReportStatus
+    {
+        Running,
+        Completed,
+        Failed
+    }
+
+    public class ReportItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public DateTime RequestedAt { get; set; }
+        public string RequestedBy { get; set; } = string.Empty;
+        public ReportStatus Status { get; set; }
+        public string ExecutionTime { get; set; } = "-";
+    }
+
+    private DateTime _businessDate = DateTime.Today;
+    private bool _isLoading;
+    private string _searchString = string.Empty;
+
+    // Chart Data Definitions
+    private readonly string[] _chartXAxis = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+    private readonly List<ChartSeries<double>> _chartSeries = new()
+    {
+        new ChartSeries<double> { Name = "Successful", Data = new double[] { 42, 55, 60, 48, 52, 20, 15 } },
+        new ChartSeries<double> { Name = "Failed", Data = new double[] { 2, 1, 3, 0, 4, 0, 1 } }
+    };
+
+    // Reports Mock Data
+    private List<ReportItem> _reports = new();
+
+    protected override void OnInitialized()
+    {
+        LoadMockReports();
+        base.OnInitialized();
+    }
+
+    private void LoadMockReports()
+    {
+        _reports = new List<ReportItem>
+        {
+            new() { Id = 101, Name = "End of Day Financial Reconciliation", Category = "Finance", RequestedBy = "System Scheduler", RequestedAt = DateTime.Now.AddMinutes(-12), Status = ReportStatus.Running, ExecutionTime = "Running..." },
+            new() { Id = 102, Name = "Q3 Regional Sales Summary", Category = "Sales", RequestedBy = "Alex Morgan", RequestedAt = DateTime.Now.AddMinutes(-45), Status = ReportStatus.Completed, ExecutionTime = "1m 24s" },
+            new() { Id = 103, Name = "User Security Audit Log", Category = "Security", RequestedBy = "Admin", RequestedAt = DateTime.Now.AddHours(-2), Status = ReportStatus.Completed, ExecutionTime = "45s" },
+            new() { Id = 104, Name = "Real-time Inventory Delta", Category = "Logistics", RequestedBy = "System Scheduler", RequestedAt = DateTime.Now.AddHours(-3), Status = ReportStatus.Failed, ExecutionTime = "12s" },
+            new() { Id = 105, Name = "Customer Churn Prediction Dataset", Category = "Analytics", RequestedBy = "Sarah Chen", RequestedAt = DateTime.Now.AddHours(-4), Status = ReportStatus.Completed, ExecutionTime = "4m 10s" },
+            new() { Id = 106, Name = "Monthly Tax Liability Export", Category = "Finance", RequestedBy = "Alex Morgan", RequestedAt = DateTime.Now.AddHours(-6), Status = ReportStatus.Completed, ExecutionTime = "2m 05s" }
+        };
+    }
+
+    private async Task RefreshDashboard()
+    {
+        _isLoading = true;
+        await Task.Delay(800); // Simulate API latency
+
+        // Add a mock dynamic item on refresh to show reactivity
+        _reports.Insert(0, new ReportItem
+        {
+            Id = Random.Shared.Next(107, 999),
+            Name = "Manual On-Demand Audit Sync",
+            Category = "System",
+            RequestedBy = "Alex Morgan",
+            RequestedAt = DateTime.Now,
+            Status = ReportStatus.Completed,
+            ExecutionTime = "0m 08s"
+        });
+
+        _isLoading = false;
+        Snackbar.Add("Dashboard data refreshed successfully!", Severity.Success);
+    }
+
+    private bool FilterFunc(ReportItem element)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+        if (element.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Category.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.RequestedBy.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+}

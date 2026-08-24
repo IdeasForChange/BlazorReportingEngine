@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 
-namespace Smbc.Risk.ReportingEngine.WebUI.Shared.Themes;
+namespace Smbc.Risk.ReportingEngine.WebUI.Features.Themes.Store;
 
 public class ThemeManager
 {
@@ -52,5 +52,5 @@ public class ThemeManager
         },
 
     };
-} 
+}
 

@@ -19,6 +19,13 @@ public class ReportMasterController(IReportManagementService service) : Controll
         return Ok(reports);
     }
 
+    [HttpGet("{id:long}")]
+    public async Task<IActionResult> GetById(long id,CancellationToken cancellationToken = default)
+    {
+        var result = await _service.GetByIdAsync(id, cancellationToken);
+        return result is null ? NotFound() : Ok(result);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] SaveReportMasterDto dto, CancellationToken cancellationToken)
     {
@@ -26,17 +33,24 @@ public class ReportMasterController(IReportManagementService service) : Controll
         return CreatedAtAction(nameof(GetAll), new { id }, id);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] ReportMasterDto dto, CancellationToken cancellationToken)
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> Update(long id, [FromBody] ReportMasterDto dto, CancellationToken cancellationToken)
     {
-        //await _service.UpdateReportAsync(id, dto, cancellationToken);
-        return NoContent();
+        if (id != dto.Id)
+        {
+            return BadRequest("Mismatched ID");
+        }
+
+        // Update the report using the service.
+        // TODO: Pass the current user or any other necessary information.
+        var updatedReport = await _service.UpdateAsync(dto, "System", cancellationToken); 
+        return Ok(updatedReport);
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    [HttpDelete("{id:long}")]
+    public async Task<IActionResult> Delete(long id, [FromQuery] bool hardDelete = false, CancellationToken cancellationToken = default)
     {
-        //await _service.DeleteReportAsync(id, cancellationToken);
+        await _service.DeleteAsync(id, hardDelete, cancellationToken);
         return NoContent();
     }
 }

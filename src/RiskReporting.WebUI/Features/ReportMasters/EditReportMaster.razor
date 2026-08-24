@@ -157,7 +157,7 @@
         </MudTabPanel>
 
         @* SUB-TAB 2: Parameters Manager *@
-        <MudTabPanel Text="Parameters" Icon="@Icons.Material.Outlined.Tune" BadgeData="@Model.Parameters.Count" BadgeColor="Color.Primary">
+        <MudTabPanel Text="Parameters" Icon="@Icons.Material.Outlined.Tune" BadgeData="@Model.ReportParameters.Count" BadgeColor="Color.Primary">
             
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2 mt-2 pt-4">
                 <div>
@@ -169,7 +169,7 @@
                 </MudButton>
             </MudStack>
 
-            @if (!Model.Parameters.Any())
+            @if (!Model.ReportParameters.Any())
             {
                 <MudPaper Class="pa-8 text-center border-dashed rounded-lg" Elevation="0">
                     <MudIcon Icon="@Icons.Material.Outlined.Tune" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
@@ -178,7 +178,7 @@
             }
             else
             {
-                <MudTable Items="@Model.Parameters" Hover="true" Elevation="0" Outlined="true" Class="rounded-lg">
+                <MudTable Items="@Model.ReportParameters" Hover="true" Elevation="0" Outlined="true" Class="rounded-lg">
                     <HeaderContent>
                         <MudTh>Parameter Name</MudTh>
                         <MudTh>Data Type</MudTh>
@@ -197,7 +197,7 @@
                         </MudTd>
                         <MudTd><MudCheckBox @bind-Value="context.IsRequired" Color="Color.Primary" Dense="true" /></MudTd>
                         <MudTd Style="text-align:right">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => Model.Parameters.Remove(context)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => Model.ReportParameters.Remove(context)" />
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -205,7 +205,7 @@
         </MudTabPanel>
 
         @* SUB-TAB 3: Templates & Formatted SQL Query Metrics *@
-        <MudTabPanel Text="Templates & Metrics" Icon="@Icons.Material.Outlined.Code" BadgeData="@Model.Templates.Count" BadgeColor="Color.Secondary">
+        <MudTabPanel Text="Templates & Metrics" Icon="@Icons.Material.Outlined.Code" BadgeData="@Model.ReportTemplates.Count" BadgeColor="Color.Secondary">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-4 pt-4">
                 <MudIconButton Icon="@Icons.Material.Outlined.PermDataSetting" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Medium" />
                 <MudStack Spacing="0" Class="ml-1">
@@ -228,9 +228,9 @@
                 </MudExpansionPanel>
             </MudExpansionPanels>
 
-            @if (Model.Templates.Count > 0 && Model.Templates.Any())
+            @if (Model.ReportTemplates.Count > 0 && Model.ReportTemplates.Any())
             {
-                var template = Model.Templates.OrderByDescending(p => p.TemplateVersion).FirstOrDefault();
+                var template = Model.ReportTemplates.OrderByDescending(p => p.TemplateVersion).FirstOrDefault();
                 @if (template != null)
                 {
                     <MudCard Class="mb-2 rounded-lg" Outlined="true" Elevation="0">
@@ -243,7 +243,7 @@
                                 </MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Large" Variant="Variant.Filled" OnClick="() => Model.Templates.Remove(template)" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Large" Variant="Variant.Filled" OnClick="() => Model.ReportTemplates.Remove(template)" />
                             </CardHeaderActions>
                         </MudCardHeader>
 
@@ -252,13 +252,13 @@
 
                             <MudExpansionPanels MultiExpansion="false">
 
-                            @foreach (var metric in template.Metrics)
+                            @foreach (var metric in template.ReportMetrics)
                             {
                                 <MudExpansionPanel Text="@metric.NamedRange">
                                     <MudPaper Class="pa-3 mb-3 rounded-lg" Outlined="true" Elevation="0" Style="border-left: 4px solid var(--mud-palette-primary) !important;">
                                         <MudGrid Class="mb-2">
                                             <MudItem xs="12" sm="10">
-                                                <MudSelect T="DatabaseType" @bind-Value="metric.DatabaseType" Label="Target DB" Variant="Variant.Outlined" Margin="Margin.Dense">
+                                                <MudSelect T="long?" @bind-Value="metric.DatabaseConnectionId" Label="Target DB" Variant="Variant.Outlined" Margin="Margin.Dense">
                                                     @foreach (DatabaseType dbType in Enum.GetValues<DatabaseType>())
                                                     {
                                                         <MudSelectItem Value="@dbType">@GetEnumDisplayName(dbType)</MudSelectItem>
@@ -320,7 +320,7 @@
         public Dictionary<string, string> ParamValues { get; set; } = new();
     }
 
-    private void AddParameter() => Model.Parameters.Add(new ReportParameterDto());
+    private void AddParameter() => Model.ReportParameters.Add(new ReportParameterDto());
 
     private StandaloneEditorConstructionOptions GetMonacoOptions(StandaloneCodeEditor editor, string initialSql)
     {
@@ -378,11 +378,11 @@
         await selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream);
 
         var temporaryTemplateId = -1; // Temporary ID for new template
-        var template = Model.Templates.Where(p => p.Id == temporaryTemplateId).FirstOrDefault();
+        var template = Model.ReportTemplates.Where(p => p.Id == temporaryTemplateId).FirstOrDefault();
 
         if(template != null)
         {
-            Model.Templates.Remove(template);
+            Model.ReportTemplates.Remove(template);
         }
 
         template = new ReportTemplateDto
@@ -393,6 +393,6 @@
             FileName = selectedFile.Name,
         };
 
-        Model.Templates.Add(template);
+        Model.ReportTemplates.Add(template);
     }
 }

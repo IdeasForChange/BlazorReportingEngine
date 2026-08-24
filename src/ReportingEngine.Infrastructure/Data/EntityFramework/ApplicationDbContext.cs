@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Smbc.ReportingEngine.Domain.Entities;
-using Smbc.ReportingEngine.Infrastructure.Data.EntityFramework.Configurations;
 using Smbc.Risk.Core.Domain.Shared.Entities;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
 
@@ -15,6 +14,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<ReportParameter> ReportParameters => Set<ReportParameter>();
     public DbSet<ReportTemplate> ReportTemplates => Set<ReportTemplate>();
     public DbSet<ReportMetric> ReportMetrics => Set<ReportMetric>();
+    public DbSet<DatabaseConnection> DatabaseConnections => Set<DatabaseConnection>();
 
     public DbSet<SystemParameterType> SystemParameterTypes { get; set; }
     public DbSet<ReportRunnerQueue> ReportRunnerQueues { get; set; }

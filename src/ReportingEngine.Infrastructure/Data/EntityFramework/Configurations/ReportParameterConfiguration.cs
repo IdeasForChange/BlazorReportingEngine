@@ -18,9 +18,6 @@ public class ReportParameterConfiguration : IEntityTypeConfiguration<ReportParam
         builder.Property(e => e.IsRequired).HasDefaultValue(false).IsRequired();
         builder.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
 
-        // Foreign Key Index
-        builder.HasIndex(e => e.ReportId);
-
         // Common Table Items
         builder.Property(e => e.EntityVersion).HasDefaultValue(1).IsRequired();
         builder.Property(e => e.EntityWrittenAt).HasDefaultValueSql("GETUTCDATE()").IsRequired();
@@ -31,5 +28,8 @@ public class ReportParameterConfiguration : IEntityTypeConfiguration<ReportParam
         builder.Property(e => e.CreatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
         builder.Property(e => e.UpdatedBy).HasMaxLength(256).HasDefaultValue("System");
         builder.Property(e => e.UpdatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+
+        // Foreign Key Index
+        builder.HasIndex(e => e.ReportMasterId);
     }
 }

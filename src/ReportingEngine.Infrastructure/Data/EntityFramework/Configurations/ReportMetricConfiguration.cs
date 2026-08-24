@@ -13,9 +13,9 @@ public class ReportMetricConfiguration : IEntityTypeConfiguration<ReportMetric>
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.ReportTemplateId).IsRequired();
+        builder.Property(e => e.DatabaseConnectionId).IsRequired(false);
         builder.Property(e => e.NamedRange).HasMaxLength(255).IsRequired();
         builder.Property(e => e.SqlQuery).HasColumnType("nvarchar(max)").IsRequired();
-        builder.Property(e => e.DatabaseType).HasConversion<int>().HasDefaultValue(DatabaseType.SqlServer).IsRequired();
         builder.Property(e => e.MaxRows).IsRequired(false);
 
         // Common Table Items
@@ -29,8 +29,8 @@ public class ReportMetricConfiguration : IEntityTypeConfiguration<ReportMetric>
         builder.Property(e => e.UpdatedBy).HasMaxLength(256).HasDefaultValue("System");
         builder.Property(e => e.UpdatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
 
-
         // Foreign Key Index
         builder.HasIndex(e => e.ReportTemplateId);
+        builder.HasIndex(e => e.DatabaseConnectionId);
     }
 }

@@ -35,7 +35,7 @@ public record FetchPermissionsFailureAction(string ErrorMessage);
 public static class UserReducers
 {
     [ReducerMethod]
-    public static UserState OnFetchPermissions(UserState state, FetchPermissionsAction action) 
+    public static UserState OnFetchPermissions(UserState state, FetchPermissionsAction action)
     {
         return state with
         {
@@ -67,7 +67,7 @@ public static class UserReducers
             AdAccount = state.AdAccount,
             Permissions = [],
             ErrorMessage = action.ErrorMessage
-        }; 
+        };
     }
 }
 

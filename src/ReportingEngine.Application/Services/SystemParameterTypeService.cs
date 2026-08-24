@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Smbc.ReportingEngine.Domain.Entities;
 using Smbc.Risk.ReportingEngine.Application.DataTransferObjects;
 using Smbc.Risk.ReportingEngine.Domain.Repositories;
 using Smbc.Risk.ReportingEngine.Domain.Services;

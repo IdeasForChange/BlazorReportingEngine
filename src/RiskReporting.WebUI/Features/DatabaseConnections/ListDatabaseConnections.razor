@@ -1,0 +1,236 @@
+﻿@page "/database-connections"
+
+@using Fluxor
+@using Fluxor.Blazor.Web.Components
+@using MudBlazor
+@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+@using Smbc.Risk.ReportingEngine.Domain.Shared.Enums
+@using Smbc.Risk.ReportingEngine.WebUI.Features.DatabaseConnections.Store
+
+@inherits FluxorComponent
+
+@inject IState<DatabaseConnectionState> ConnectionState
+@inject IDispatcher Dispatcher
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<div class="d-flex justify-space-between align-center mb-6">
+    <div>
+        <PageHeader PageTitle="Database Configurations"
+                    PageSubTitle="Manage connection strings, authentication modes, and environments." />
+    </div>
+    <MudButton Variant="Variant.Filled" 
+               Color="Color.Primary" 
+               StartIcon="@Icons.Material.Filled.Add" 
+               OnClick="OpenAddDialog">
+        Add Configuration
+    </MudButton>
+</div>
+
+<MudPaper Elevation="2" Class="d-flex flex-column flex-grow-1 h-90 w-100 pa-0" Style="min-height: calc(100vh - 250px);">
+
+    <MudDataGrid Items="@ConnectionState.Value.Connections"
+                 Loading="@ConnectionState.Value.IsLoading"
+                 Hover="true" 
+                 Bordered="false"
+                 Dense="true" 
+                 Class="ma-2"
+                 QuickFilter="@FilterFunc">
+
+        <ToolBarContent>
+
+            <MudTextField @bind-Value="_searchString"
+                          Placeholder="Search by connection or host..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="width: 300px;" />
+
+            <MudSpacer />
+
+            <MudTooltip Text="Refresh Data" Placement="Placement.Bottom">
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                               Color="Color.Success"
+                               Variant="Variant.Outlined"
+                               Class="mr-2"
+                               OnClick="RefreshData" />
+            </MudTooltip>
+
+        </ToolBarContent>
+
+        <Columns>
+            <PropertyColumn Property="x => x.ConnectionName" Title="Connection Name" />
+            <PropertyColumn Property="x => x.DatabaseType" Title="Database Type" />
+            <TemplateColumn Title="Environment">
+                <CellTemplate>
+                    @if (context.Item.Environment == Domain.Shared.Enums.EnvironmentType.Production)
+                    {
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small">Production</MudChip>
+                    }
+                    else if (context.Item.Environment == EnvironmentType.UserAcceptanceTest)
+                    {
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">UAT</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.Item.Environment</MudChip>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.ServerHost" Title="Host" />
+            <PropertyColumn Property="x => x.DatabaseName" Title="Database" />
+            <TemplateColumn Title="Authentication">
+                <CellTemplate>
+                    @if (context.Item.AuthenticationMethod == DatabaseAuthenticationType.Integrated)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Success">Integrated</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2">User: @context.Item.UserId (••••••)</MudText>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.TimeoutSeconds" Title="Timeout (s)" />
+            <TemplateColumn Title="Actions" CellClass="d-flex justify-end">
+                <CellTemplate>
+                    @if (context.Item.IsReadOnly)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                       Color="Color.Info" 
+                                       Size="Size.Small" 
+                                       OnClick="@(() => OpenEditDialog(context.Item))" />
+                    }
+                    else
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                       Color="Color.Primary" 
+                                       Size="Size.Small" 
+                                       OnClick="@(() => OpenEditDialog(context.Item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                       Color="Color.Error" 
+                                       Size="Size.Small" 
+                                       OnClick="@(() => DeleteConfig(context.Item))" />
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="DatabaseConnectionDto" />
+        </PagerContent>
+    </MudDataGrid>
+</MudPaper>
+
+@code {
+    private string _searchString = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        RefreshData();
+        base.OnInitialized();
+    }
+
+    private void RefreshData()
+    {
+        Dispatcher.Dispatch(new FetchDatabaseConnectionAction());
+    }
+
+    private async Task OpenAddDialog()
+    {
+        var parameters = new DialogParameters<CreateDatabaseConnection>
+        {
+            { x => x.Model, new DatabaseConnectionDto() },
+            { x => x.ExistingConfigs, ConnectionState.Value.Connections },
+            { x => x.IsEdit, false }
+        };
+
+        var dialog = await DialogService.ShowAsync<CreateDatabaseConnection>("Add Database Configuration", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled && result.Data is DatabaseConnectionDto databaseConnection)
+        {
+            Dispatcher.Dispatch(new AddDatabaseConnectionAction(databaseConnection));
+            Snackbar.Add("Database configuration added successfully.", Severity.Success);
+        }
+    }
+
+    private async Task OpenEditDialog(DatabaseConnectionDto config)
+    {
+        // Clone object to prevent direct mutations before saving
+        var clone = new DatabaseConnectionDto
+        {
+            Id = config.Id,
+            ConnectionName = config.ConnectionName,
+            DatabaseType = config.DatabaseType,
+            Environment = config.Environment,
+            ServerHost = config.ServerHost,
+            Port = config.Port,
+            DatabaseName = config.DatabaseName,
+            AuthenticationMethod = config.AuthenticationMethod,
+            UserId = config.UserId,
+            Password = config.Password,
+            TimeoutSeconds = config.TimeoutSeconds
+        };
+
+        var title = config.IsReadOnly ? "View Production Configuration (Read Only)" : "Edit Database Configuration";
+
+        var parameters = new DialogParameters<CreateDatabaseConnection>
+        {
+            { x => x.Model, clone },
+            { x => x.ExistingConfigs, ConnectionState.Value.Connections },
+            { x => x.IsEdit, true }
+        };
+
+        var dialog = await DialogService.ShowAsync<CreateDatabaseConnection>(title, parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled && result.Data is DatabaseConnectionDto databaseConnection)
+        {
+            Dispatcher.Dispatch(new UpdateDatabaseConnectionAction(databaseConnection));
+            Snackbar.Add("Database configuration updated successfully.", Severity.Success);
+        }
+    }
+
+    private async Task DeleteConfig(DatabaseConnectionDto databaseConnection)
+    {
+        if (databaseConnection.IsReadOnly)
+        {
+            Snackbar.Add("Production configurations cannot be deleted.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+    {
+        { "ContentText", $"Are you sure you want to delete '{databaseConnection.ConnectionName}' for {databaseConnection.Environment}?" },
+        { "ButtonText", "Delete" },
+        { "Color", Color.Error }
+    };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        // Shows a quick dialog
+        bool? result = await DialogService.ShowMessageBoxAsync(
+            "Confirm Deletion",
+            $"Are you sure you want to delete '{databaseConnection.ConnectionName}' for {databaseConnection.Environment}?",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (result == true)
+        {
+            Dispatcher.Dispatch(new DeleteDatabaseConnectionAction(databaseConnection.Id));
+            Snackbar.Add($"Configuration '{databaseConnection.ConnectionName}' was deleted.", Severity.Info);
+        }
+    }
+
+    private bool FilterFunc(DatabaseConnectionDto element)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+        if (element.ConnectionName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.ServerHost.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.DatabaseName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+}

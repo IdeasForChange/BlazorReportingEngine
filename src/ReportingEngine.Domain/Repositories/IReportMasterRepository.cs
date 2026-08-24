@@ -5,4 +5,5 @@ namespace Smbc.Risk.ReportingEngine.Domain.Repositories;
 
 public interface IReportMasterRepository : IBaseRepository<ReportMaster>
 {
+    Task DeleteOrInactivateAsync(long id, bool hardDelete = false, CancellationToken cancellationToken = default);
 }

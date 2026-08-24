@@ -5,7 +5,6 @@ namespace Smbc.Risk.ReportingEngine.Domain.Entities;
 
 public class ReportRunnerQueue : EntityBase
 {
-    public long ReportTemplateId { get; set; }
     public QueueStatus Status { get; set; } = QueueStatus.Pending;
     public string ParameterPayloadJson { get; set; } = "{}"; // JSON map of parameter values
     public int ProgressPercentage { get; set; }
@@ -14,5 +13,6 @@ public class ReportRunnerQueue : EntityBase
     public DateTime? StartedAtUtc { get; set; }
     public DateTime? CompletedAtUtc { get; set; }
 
-    public ReportTemplate? ReportTemplate { get; set; }
+    public long ReportMasterId { get; set; }
+    public ReportMaster ReportMaster { get; set; } = null!;
 }

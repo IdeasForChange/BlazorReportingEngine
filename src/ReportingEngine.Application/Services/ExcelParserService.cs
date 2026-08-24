@@ -10,7 +10,7 @@ public class ExcelParserService : IExcelParserService
         var result = new List<string>();
 
         using var workbook = new XLWorkbook(fileStream);
-        if(workbook != null && workbook.DefinedNames != null )
+        if (workbook != null && workbook.DefinedNames != null)
         {
             result = workbook.Worksheets
                 .SelectMany(ws => ws.DefinedNames)

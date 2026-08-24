@@ -1,14 +1,12 @@
-﻿using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
-
-namespace Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
+﻿namespace Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
 
 public record ReportMetricDto
 {
     public long Id { get; set; }
     public long ReportTemplateId { get; set; }
     public string NamedRange { get; set; } = string.Empty;
+    public long? DatabaseConnectionId { get; set; }
     public string SqlQuery { get; set; } = string.Empty;
-    public DatabaseType DatabaseType { get; set; } = DatabaseType.SqlServer;
     public int? MaxRows { get; set; }
     public bool IsActive { get; set; } = true;
 }

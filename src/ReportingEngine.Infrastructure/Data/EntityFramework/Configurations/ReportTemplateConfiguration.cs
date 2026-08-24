@@ -13,7 +13,7 @@ public class ReportTemplateConfiguration : IEntityTypeConfiguration<ReportTempla
 
         builder.HasKey(e => e.Id);
 
-        builder.Property(e => e.ReportId).IsRequired();
+        builder.Property(e => e.ReportMasterId).IsRequired();
         builder.Property(e => e.TemplateFileName).HasMaxLength(1000).IsRequired();
         builder.Property(e => e.TemplatePath).HasMaxLength(1000).IsRequired();
         builder.Property(e => e.TemplateVersion).HasDefaultValue(1).IsRequired();
@@ -30,10 +30,10 @@ public class ReportTemplateConfiguration : IEntityTypeConfiguration<ReportTempla
         builder.Property(e => e.UpdatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
 
         // Foreign Key Index
-        builder.HasIndex(e => e.ReportId);
+        builder.HasIndex(e => e.ReportMasterId);
 
         // Relationships
-        builder.HasMany(e => e.Metrics)
+        builder.HasMany(e => e.ReportMetrics)
             .WithOne(m => m.ReportTemplate)
             .HasForeignKey(m => m.ReportTemplateId)
             .OnDelete(DeleteBehavior.Cascade);

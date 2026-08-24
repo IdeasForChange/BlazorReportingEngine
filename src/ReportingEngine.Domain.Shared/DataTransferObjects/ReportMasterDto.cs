@@ -8,6 +8,6 @@ public class ReportMasterDto
     public string ReportNamePattern { get; set; } = string.Empty;
     public string ReportDirectory { get; set; } = string.Empty;
     public bool IsActive { get; set; }
-    public List<ReportParameterDto> Parameters { get; set; } = [];
-    public List<ReportTemplateDto> Templates { get; set; } = [];
+    public List<ReportParameterDto> ReportParameters { get; set; } = [];
+    public List<ReportTemplateDto> ReportTemplates { get; set; } = [];
 }

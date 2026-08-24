@@ -1,25 +1,14 @@
 ﻿using Fluxor;
 using MudBlazor;
 using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
-using static System.Net.WebRequestMethods;
 
 namespace Smbc.Risk.ReportingEngine.WebUI.Features.ReportMasters.Store;
 
 // Represents the state of the Report Master feature
-public record ReportMasterState(bool IsLoading, IEnumerable<ReportMasterDto> Reports, string? ErrorMessage);
-
-// Represents the feature for managing Report Master state
-public class ReportMasterFeature : Feature<ReportMasterState>
+[FeatureState]
+public record ReportMasterState(bool IsLoading, IEnumerable<ReportMasterDto> Reports, string? ErrorMessage)
 {
-    public override string GetName() => nameof(ReportMasterFeature);
-    protected override ReportMasterState GetInitialState()
-    {
-        return new ReportMasterState(
-            IsLoading: false,
-            Reports: [],
-            ErrorMessage: null
-        );
-    }
+    public ReportMasterState() : this(false, [], null) { }
 }
 
 // Actions for loading reports
@@ -28,21 +17,21 @@ public record FetchReportMasterSuccessAction(IEnumerable<ReportMasterDto> Report
 
 public record SaveReportMasterAction(SaveReportMasterDto ReportMaster);
 public record UpdateReportMasterAction(ReportMasterDto ReportMaster);
-public record DeleteReportMasterAction(long Id);
+public record DeleteReportMasterAction(long Id, bool HardDelete);
 
 // Reducers for handling state changes in response to actions
 public static class ReportMasterReducers
 {
     [ReducerMethod]
-    public static ReportMasterState OnLoad(ReportMasterState state, FetchReportMasterAction action) 
+    public static ReportMasterState OnLoad(ReportMasterState state, FetchReportMasterAction action)
     {
         return state with { IsLoading = true, ErrorMessage = null };
     }
 
     [ReducerMethod]
-    public static ReportMasterState OnSuccess(ReportMasterState state, FetchReportMasterSuccessAction action) 
+    public static ReportMasterState OnSuccess(ReportMasterState state, FetchReportMasterSuccessAction action)
     {
-        return state with { IsLoading = false, Reports = action.Reports }; 
+        return state with { IsLoading = false, Reports = action.Reports };
     }
 }
 
@@ -54,7 +43,7 @@ public class ReportMasterEffects(HttpClient httpClient, IConfiguration configura
     private string? apiEndpoint => $"{_configuration?.GetValue<string>("REPORT_MANAGEMENT_API")}ReportMaster";
 
     [EffectMethod]
-    public async Task HandleLoadReports(FetchReportMasterAction action, IDispatcher dispatcher)
+    public async Task HandleFetch(FetchReportMasterAction action, IDispatcher dispatcher)
     {
         try
         {
@@ -73,7 +62,7 @@ public class ReportMasterEffects(HttpClient httpClient, IConfiguration configura
     }
 
     [EffectMethod]
-    public async Task HandleSave(SaveReportMasterAction action, IDispatcher dispatcher)
+    public async Task HandleAdd(SaveReportMasterAction action, IDispatcher dispatcher)
     {
         try
         {
@@ -101,7 +90,7 @@ public class ReportMasterEffects(HttpClient httpClient, IConfiguration configura
     }
 
     [EffectMethod]
-    public async Task HandleSave(UpdateReportMasterAction action, IDispatcher dispatcher)
+    public async Task HandleUpdate(UpdateReportMasterAction action, IDispatcher dispatcher)
     {
         try
         {
@@ -130,7 +119,7 @@ public class ReportMasterEffects(HttpClient httpClient, IConfiguration configura
     [EffectMethod]
     public async Task HandleDelete(DeleteReportMasterAction action, IDispatcher dispatcher)
     {
-        await _httpClient.DeleteAsync($"api/ReportMaster/{action.Id}");
+        await _httpClient.DeleteAsync($"{apiEndpoint}/{action.Id}?hardDelete={action.HardDelete}");
         dispatcher.Dispatch(new FetchReportMasterAction());
     }
 }

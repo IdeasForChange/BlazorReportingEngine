@@ -1,16 +1,33 @@
-﻿@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+﻿@page "/report-management"
+
+@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
 @using Smbc.Risk.ReportingEngine.WebUI.Features.ReportMasters.Store
 
 @inject IState<ReportMasterState> ReportMasterState
 @inject IDispatcher Dispatcher
 @inject IDialogService DialogService
 
+<div class="d-flex justify-space-between align-center mb-6">
+    <div>
+        <PageHeader PageTitle="Master Report Management"
+                    PageSubTitle="Manage master report templates and their associated metrics." />
+    </div>
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="OpenAddDialog">
+        Add Report
+    </MudButton>
+
+</div>
+
 @* Styled Workspace Multi-Tabs *@
-<MudPaper Elevation="2" Class="d-flex flex-column flex-grow-1 h-90 w-100 pa-0" Style="min-height: calc(100vh - 200px);">
+<MudPaper Elevation="2" Class="d-flex flex-column flex-grow-1 h-90 w-100 pa-0" Style="min-height: calc(100vh - 250px);">
     <MudDynamicTabs @bind-ActivePanelIndex="_activeTabIndex"
                     CloseTab="CloseTab"
                     ApplyEffectsToContainer="true"
-                    Class="pa-0"
+                    Class="pa-2"
                     Elevation="0"
                     AddIconClass="hidden"
                     HeaderPosition="TabHeaderPosition.After">
@@ -37,10 +54,9 @@
                                   Placeholder="Search reports..."
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.Search"
-                                  IconSize="Size.Medium"
-                                  Class="mt-0 mr-4"
                                   Immediate="true"
-                                  Clearable="true" />
+                                  Clearable="true"
+                                  Style="width: 300px;" />
 
                     <MudSpacer />
 
@@ -52,12 +68,6 @@
                                        OnClick="RefreshData" />
                     </MudTooltip>
 
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               StartIcon="@Icons.Material.Filled.Add"
-                               OnClick="OpenCreateDialog">
-                        Add Report
-                    </MudButton>
                 </ToolBarContent>
 
                 <Columns>
@@ -75,12 +85,12 @@
                     <PropertyColumn Property="x => x.ReportDirectory" Title="Output Directory" />
                     <TemplateColumn Title="Number of Parameters">
                         <CellTemplate>
-                            <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.Item.Parameters.Count</MudChip>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.Item.ReportParameters.Count</MudChip>
                         </CellTemplate>
                     </TemplateColumn>
                     <TemplateColumn Title="Template Metrics">
                         <CellTemplate>
-                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@context.Item.Templates.OrderByDescending(p => p.TemplateVersion).FirstOrDefault()?.Metrics.Count</MudChip>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@context.Item.ReportTemplates.OrderByDescending(p => p.TemplateVersion).FirstOrDefault()?.ReportMetrics.Count</MudChip>
                         </CellTemplate>
                     </TemplateColumn>
                     <TemplateColumn Title="Status">
@@ -159,8 +169,8 @@
             ReportNamePattern = dto.ReportNamePattern,
             ReportDirectory = dto.ReportDirectory,
             IsActive = dto.IsActive,
-            Parameters = dto.Parameters.ToList(),
-            Templates = dto.Templates.ToList()
+            ReportParameters = dto.ReportParameters.ToList(),
+            ReportTemplates = dto.ReportTemplates.ToList()
         };
 
         _openTabs.Add(new ReportTabItem { Model = tabModel });
@@ -194,7 +204,7 @@
         return false;
     };
 
-    private async Task OpenCreateDialog()
+    private async Task OpenAddDialog()
     {
         var dialog = await DialogService.ShowAsync<CreateReportMaster>();
         var result = await dialog.Result;

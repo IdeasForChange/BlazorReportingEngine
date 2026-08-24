@@ -3,7 +3,7 @@ using Smbc.Risk.ReportingEngine.Domain.Repositories;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
 
-public class ReportMetricRepository(ApplicationDbContext dbContext)
-    : BaseRepository<ReportMetric>(dbContext), IReportMetricRepository
+internal class DatabaseConnectionRepository(ApplicationDbContext dbContext)
+    : BaseRepository<DatabaseConnection>(dbContext), IDatabaseConnectionRepository
 {
 }

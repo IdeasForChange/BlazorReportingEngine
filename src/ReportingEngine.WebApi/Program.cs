@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using Microsoft.Extensions.DependencyInjection;
 using Smbc.Risk.ReportingEngine.Application;
 using Smbc.Risk.ReportingEngine.Infrastructure;
 

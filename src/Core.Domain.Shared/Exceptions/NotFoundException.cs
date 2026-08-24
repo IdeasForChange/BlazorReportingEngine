@@ -1,6 +1,6 @@
 ﻿namespace Smbc.Risk.Core.Domain.Shared.Exceptions;
 
-public class NotFoundException : Exception 
+public class NotFoundException : Exception
 {
     public NotFoundException() { }
     public NotFoundException(string? message) : base(message) { }

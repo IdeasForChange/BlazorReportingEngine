@@ -10,6 +10,29 @@ DROP TABLE IF EXISTS [Reporting].[ReportParameter];
 DROP TABLE IF EXISTS [Reporting].[ReportMetric];
 DROP TABLE IF EXISTS [Reporting].[ReportTemplate];
 DROP TABLE IF EXISTS [Reporting].[ReportMaster];
+DROP TABLE IF EXISTS [Reporting].[DatabaseConnection];
+
+CREATE TABLE [Reporting].[DatabaseConnection] (
+    [Id] BIGINT IDENTITY(1,1) NOT NULL,
+    [ConnectionName] NVARCHAR(100) NOT NULL,
+    [Type] INT NOT NULL,
+    [Environment] INT NOT NULL,
+    [ServerHost] NVARCHAR(255) NOT NULL,
+    [Port] INT NOT NULL DEFAULT 1433,
+    [DatabaseName] NVARCHAR(128) NOT NULL,
+    [AuthMethod] INT NOT NULL,
+    [UserId] NVARCHAR(100) NULL,
+    [Password] NVARCHAR(255) NULL,
+    [TimeoutSeconds] INT NOT NULL DEFAULT 30,
+    [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    [UpdatedAt] DATETIME2 NULL,
+
+    CONSTRAINT [PK_DatabaseConnection] PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [UQ_DatabaseConnection_Name_Environment] UNIQUE ([ConnectionName], [Environment])
+);
+
+-- Index for querying connections by Environment
+CREATE NONCLUSTERED INDEX [IX_DatabaseConnection_Environment] ON [dbo].[DatabaseConnection] ([Environment]);
 
 CREATE TABLE [Reporting].[ReportMaster] (
     [Id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -70,7 +93,7 @@ CREATE TABLE [Reporting].[ReportMetric] (
     [ReportTemplateId] BIGINT NOT NULL,
     [NamedRange] NVARCHAR(255) NOT NULL,
     [SqlQuery] NVARCHAR(MAX) NOT NULL,
-    [DatabaseType] INT NOT NULL DEFAULT 1,
+	[DatabaseConnectionId] BIGINT NOT NULL,
     [MaxRows] INT NULL,
     [IsActive] BIT NOT NULL DEFAULT 1,
     [CreatedBy] NVARCHAR(256) NULL,
@@ -80,13 +103,15 @@ CREATE TABLE [Reporting].[ReportMetric] (
     CONSTRAINT [PK_ReportMetric] PRIMARY KEY CLUSTERED ([Id] ASC),
     CONSTRAINT [FK_ReportMetric_ReportTemplate] FOREIGN KEY ([ReportTemplateId]) 
         REFERENCES [Reporting].[ReportTemplate] ([Id]) ON DELETE CASCADE
+    CONSTRAINT [FK_ReportMetric_DatabaseConnection] FOREIGN KEY ([DatabaseConnectionId]) 
+        REFERENCES [Reporting].[DatabaseConnection] ([Id]) ON DELETE CASCADE
 );
 
 -- Indexing foreign keys for query performance
 CREATE INDEX [IX_ReportParameter_ReportId] ON [Reporting].[ReportParameter] ([ReportId]);
 CREATE INDEX [IX_ReportTemplate_ReportId] ON [Reporting].[ReportTemplate] ([ReportId]);
 CREATE INDEX [IX_ReportMetric_ReportTemplateId] ON [Reporting].[ReportMetric] ([ReportTemplateId]);
-
+CREATE INDEX [IX_ReportMetric_DatabaseConnectionId] ON [Reporting].[ReportMetric] ([DatabaseConnectionId]);
 
 CREATE TABLE [Reporting].[ReportRunnerQueue] (
     [Id] BIGINT IDENTITY(1,1) NOT NULL,

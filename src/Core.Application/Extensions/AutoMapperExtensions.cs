@@ -8,7 +8,7 @@ public static class AutoMapperExtensions
         this IMappingExpression<TSource, TDestination> expression)
     {
         var destinationType = typeof(TDestination);
-        foreach(var property in destinationType.GetProperties())
+        foreach (var property in destinationType.GetProperties())
         {
             expression.ForMember(property.Name, opt => opt.Ignore());
         }
