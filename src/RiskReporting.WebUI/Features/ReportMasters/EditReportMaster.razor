@@ -3,6 +3,10 @@
 @using BlazorMonaco.Editor
 @using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
 @using Smbc.Risk.ReportingEngine.Domain.Shared.Enums
+@using Smbc.Risk.ReportingEngine.WebUI.Features.DatabaseConnections.Store
+
+@inject IDispatcher Dispatcher
+@inject IState<DatabaseConnectionState> ConnectionState
 
 <MudForm @ref="_form" @bind-IsValid="_isValid">
 
@@ -259,9 +263,9 @@
                                         <MudGrid Class="mb-2">
                                             <MudItem xs="12" sm="10">
                                                 <MudSelect T="long?" @bind-Value="metric.DatabaseConnectionId" Label="Target DB" Variant="Variant.Outlined" Margin="Margin.Dense">
-                                                    @foreach (DatabaseType dbType in Enum.GetValues<DatabaseType>())
+                                                    @foreach (var connection in ConnectionState.Value.Connections)
                                                     {
-                                                        <MudSelectItem Value="@dbType">@GetEnumDisplayName(dbType)</MudSelectItem>
+                                                        <MudSelectItem Value="@connection.Id">@($"[{connection.Environment}] [{connection.DatabaseType}] {connection.ConnectionName}")</MudSelectItem>
                                                     }
                                                 </MudSelect>
                                             </MudItem>
@@ -313,6 +317,13 @@
     private bool _isValid;
     private Dictionary<string, StandaloneCodeEditor> _editorMap = new();
     private IBrowserFile? selectedFile;
+
+    protected override void OnInitialized()
+    {
+        Dispatcher.Dispatch(new FetchDatabaseConnectionAction());
+        base.OnInitialized();
+    }
+
 
     private class MetricPreviewState
     {

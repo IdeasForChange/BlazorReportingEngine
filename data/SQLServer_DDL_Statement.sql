@@ -98,7 +98,7 @@ CREATE TABLE [Reporting].[ReportMetric] (
     [ReportTemplateId] BIGINT NOT NULL,
     [NamedRange] NVARCHAR(255) NOT NULL,
     [SqlQuery] NVARCHAR(MAX) NOT NULL,
-	[DatabaseConnectionId] BIGINT NOT NULL,
+	[DatabaseConnectionId] BIGINT NULL,
     [MaxRows] INT NULL,
     [IsActive] BIT NOT NULL DEFAULT 1,
     [CreatedBy] NVARCHAR(256) NULL,
