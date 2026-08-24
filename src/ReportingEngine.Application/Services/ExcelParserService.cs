@@ -17,14 +17,7 @@ public class ExcelParserService : IExcelParserService
                 .Select(nr => nr.Name)
                 .Distinct()
                 .ToList();
-
-            //foreach (var wsNamedRange in workbook.Worksheets.SelectMany(ws => ws.DefinedNames))
-            //{
-            //    Console.WriteLine($"{wsNamedRange.Name} = {wsNamedRange.RefersTo}");
-            //}
         }
-
-
         return result;
     }
 }
