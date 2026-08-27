@@ -31,14 +31,13 @@ public static class ServiceRegistration
         });
 
         // Configure BASE dependencies
-        services.AddScoped<ISystemParameterTypeRepository, SystemParameterTypeRepository>();
         services.AddTransient<IDynamicQueryExecutor, DynamicQueryExecutor>();
         services.AddTransient<IReportParameterRepository, ReportParameterRepository>();
         services.AddTransient<IReportMetricRepository, ReportMetricRepository>();
         services.AddTransient<IReportTemplateRepository, ReportTemplateRepository>();
         services.AddTransient<IReportMasterRepository, ReportMasterRepository>();
         services.AddTransient<IDatabaseConnectionRepository, DatabaseConnectionRepository>();
-
+        services.AddTransient<IReportRunnerQueueRepository, ReportRunnerQueueRepository>();
 
         // 4. Background Multi-Threaded Execution Engine
         //services.AddHostedService<ReportRunnerWorker>();

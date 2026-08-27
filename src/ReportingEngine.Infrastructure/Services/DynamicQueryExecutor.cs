@@ -1,13 +1,20 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Logging;
 using Smbc.Risk.ReportingEngine.Application.Interfaces;
+using Smbc.Risk.ReportingEngine.Domain.Repositories;
 using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 using System.Data;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Services;
 
-public class DynamicQueryExecutor : IDynamicQueryExecutor
+public class DynamicQueryExecutor(
+    ILogger<DynamicQueryExecutor> logger,
+    IDatabaseConnectionRepository databaseConnectionRepository) : IDynamicQueryExecutor
 {
+    private readonly ILogger<DynamicQueryExecutor> _logger = logger;
+    private readonly IDatabaseConnectionRepository _databaseConnectionRepository = databaseConnectionRepository;
+
     public async Task<DataTable> ExecuteQueryAsync(
         DatabaseType dbType,
         string sqlQuery,
@@ -54,5 +61,14 @@ public class DynamicQueryExecutor : IDynamicQueryExecutor
         }
 
         return await Task.FromResult(dt);
+    }
+
+    public Task<DataTable> ExecuteQueryAsync(
+        long? databaseConnectionId,
+        string sqlQuery,
+        int? maxRows,
+        CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

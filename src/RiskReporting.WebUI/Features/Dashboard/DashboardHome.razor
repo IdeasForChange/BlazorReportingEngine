@@ -13,7 +13,7 @@
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                 <div>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">BUSINESS DATE</MudText>
-                    <MudText Typo="Typo.h5" Bold="true">@_businessDate.ToString("yyyy-MM-dd")</MudText>
+                    <MudText Typo="Typo.h5">@_businessDate.ToString("yyyy-MM-dd")</MudText>
                 </div>
                 <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Primary" Size="Size.Large" />
             </MudStack>
@@ -25,7 +25,7 @@
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                 <div>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">REPORTS RUN TODAY</MudText>
-                    <MudText Typo="Typo.h5" Bold="true">@_reports.Count</MudText>
+                    <MudText Typo="Typo.h5">@_reports.Count</MudText>
                 </div>
                 <MudIcon Icon="@Icons.Material.Filled.Assessment" Color="Color.Info" Size="Size.Large" />
             </MudStack>
@@ -37,7 +37,7 @@
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                 <div>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">SUCCESSFUL</MudText>
-                    <MudText Typo="Typo.h5" Bold="true" Color="Color.Success">
+                    <MudText Typo="Typo.h5" Color="Color.Success">
                         @_reports.Count(r => r.Status == ReportStatus.Completed)
                     </MudText>
                 </div>
@@ -51,7 +51,7 @@
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                 <div>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">FAILURES</MudText>
-                    <MudText Typo="Typo.h5" Bold="true" Color="Color.Error">
+                    <MudText Typo="Typo.h5" Color="Color.Error">
                         @_reports.Count(r => r.Status == ReportStatus.Failed)
                     </MudText>
                 </div>
@@ -70,7 +70,6 @@
 
             <MudChart ChartType="ChartType.Bar"
                       ChartSeries="@_chartSeries"
-                      XAxisLabels="@_chartXAxis"
                       Width="100%"
                       Height="280px" />
         </MudPaper>
@@ -118,7 +117,6 @@
     }
 
     private DateTime _businessDate = DateTime.Today;
-    private bool _isLoading;
     private string _searchString = string.Empty;
 
     // Chart Data Definitions
@@ -153,7 +151,6 @@
 
     private async Task RefreshDashboard()
     {
-        _isLoading = true;
         await Task.Delay(800); // Simulate API latency
 
         // Add a mock dynamic item on refresh to show reactivity
@@ -168,7 +165,6 @@
             ExecutionTime = "0m 08s"
         });
 
-        _isLoading = false;
         Snackbar.Add("Dashboard data refreshed successfully!", Severity.Success);
     }
 

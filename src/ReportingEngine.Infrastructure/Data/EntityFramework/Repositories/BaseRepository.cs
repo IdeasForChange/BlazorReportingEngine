@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Smbc.Risk.Core.Domain.Shared.Entities;
 using Smbc.Risk.Core.Domain.Shared.Repositories;
+using System.Linq.Expressions;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
 
@@ -72,4 +73,11 @@ public abstract class BaseRepository<T>(ApplicationDbContext dbContext) : IBaseR
     {
         return await _dbContext.Set<T>().AnyAsync(e => e.Id == id, cancellationToken);
     }
+
+    // FIND ALL WITH PREDICATE
+    public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _dbContext.Set<T>().AsNoTracking().Where(predicate).ToListAsync();
+    }
+
 }

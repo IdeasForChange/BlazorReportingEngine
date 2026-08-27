@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
-using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Configurations;
 

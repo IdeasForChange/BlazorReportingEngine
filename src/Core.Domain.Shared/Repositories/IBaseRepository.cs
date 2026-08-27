@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace Smbc.Risk.Core.Domain.Shared.Repositories;
 
 /// <summary>
@@ -12,4 +14,5 @@ public interface IBaseRepository<T> where T : class
     Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default);
     Task<int> CountAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
 }

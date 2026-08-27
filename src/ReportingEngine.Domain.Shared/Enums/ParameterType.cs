@@ -2,8 +2,9 @@
 
 public enum ParameterType
 {
-    Text = 1,
-    Number = 2,
-    Date = 3,
-    Boolean = 4
+    String = 1,
+    DateTime = 2,
+    Integer = 3,
+    Decimal = 4,
+    Boolean = 5
 }

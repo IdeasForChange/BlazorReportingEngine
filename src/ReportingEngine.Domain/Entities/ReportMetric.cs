@@ -1,5 +1,4 @@
 ﻿using Smbc.Risk.Core.Domain.Shared.Entities;
-using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 
 namespace Smbc.Risk.ReportingEngine.Domain.Entities;
 

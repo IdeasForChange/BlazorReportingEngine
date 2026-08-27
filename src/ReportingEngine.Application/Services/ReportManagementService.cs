@@ -10,16 +10,20 @@ using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 namespace Smbc.Risk.ReportingEngine.Application.Services;
 
 public class ReportManagementService(
-    ILogger<ReportManagementService> logger,
     IMapper mapper,
+    ILogger<ReportManagementService> logger,
     IExcelParserService excelParserService,
-    IReportMasterRepository reportMasterRepository
+    IReportMasterRepository reportMasterRepository,
+    IReportRunnerQueueRepository reportRunnerQueueRepository,
+    IReportParameterRepository reportParameterRepository
     ) : IReportManagementService
 {
     private readonly IMapper _mapper = mapper;
-    private readonly IExcelParserService _excelParserService = excelParserService;
     private readonly ILogger<ReportManagementService> _logger = logger;
+    private readonly IExcelParserService _excelParserService = excelParserService;
     private readonly IReportMasterRepository _reportMasterRepository = reportMasterRepository;
+    private readonly IReportParameterRepository _reportParameterRepository = reportParameterRepository;
+    private readonly IReportRunnerQueueRepository _reportRunnerQueueRepository = reportRunnerQueueRepository;
 
     public async Task<IEnumerable<ReportMasterDto>> GetAllReportsAsync(bool includeInactive = false, CancellationToken cancellationToken = default)
     {
@@ -93,5 +97,39 @@ public class ReportManagementService(
     public async Task DeleteAsync(long id, bool hardDelete = false, CancellationToken cancellationToken = default)
     {
         await _reportMasterRepository.DeleteOrInactivateAsync(id, hardDelete, cancellationToken);
+    }
+
+    public async Task<IEnumerable<ReportParameterDto>> GetParametersByMasterIdAsync(long masterId)
+    {
+        var paramsList = await _reportParameterRepository.FindAsync(p => p.ReportMasterId == masterId && p.IsActive);
+        return _mapper.Map<IEnumerable<ReportParameterDto>>(paramsList);
+    }
+
+    public async Task<ReportRunnerQueueDto> EnqueueReportJobAsync(EnqueueReportRequestDto request)
+    {
+        // AutoMapper transforms Request DTO -> Domain Entity
+        var queueEntity = _mapper.Map<ReportRunnerQueue>(request);
+
+        var addedEntity = await _reportRunnerQueueRepository.CreateAsync(queueEntity);
+
+        // Return mapped DTO back to Web API
+        return _mapper.Map<ReportRunnerQueueDto>(addedEntity);
+    }
+
+    public async Task<IEnumerable<ReportRunnerQueueDto>> GetQueueItemsAsync(string filter)
+    {
+        var queueEntities = await _reportRunnerQueueRepository.GetQueueByFilterAsync(filter);
+        return _mapper.Map<IEnumerable<ReportRunnerQueueDto>>(queueEntities);
+    }
+
+    public async Task CancelQueueItemAsync(long queueItemId)
+    {
+        var item = await _reportRunnerQueueRepository.GetByIdAsync(queueItemId);
+        if (item != null)
+        {
+            item.Status = QueueStatus.Cancelled;
+            item.ErrorMessage = "Cancelled from UI";
+            await _reportRunnerQueueRepository.UpdateAsync(item);
+        }
     }
 }

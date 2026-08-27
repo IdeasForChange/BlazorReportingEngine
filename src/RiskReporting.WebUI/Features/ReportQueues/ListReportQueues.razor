@@ -1,0 +1,148 @@
+﻿@page "/report-queues"
+@using Smbc.Risk.ReportingEngine.Domain.Shared.Enums
+@using Smbc.Risk.ReportingEngine.WebUI.Features.ReportQueues.Store
+
+@inherits FluxorComponent
+@inject IState<ReportQueueState> QueueState
+@inject IDispatcher Dispatcher
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="d-flex justify-space-between align-center mb-6">
+    <div>
+        <PageHeader PageTitle="Report Queue Status"
+                    PageSubTitle="View list of all JOBS Running / Completed or Failed." />
+    </div>
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">
+        Run a new Report
+    </MudButton>
+
+</div>
+
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudSpacer />
+
+    <MudChipSet T="string" SelectionMode="SelectionMode.SingleSelection">
+        <MudChip Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" OnClick="@(() => FilterQueue("Today"))">Today</MudChip>
+        <MudChip Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" OnClick="@(() => FilterQueue("Yesterday"))">Yesterday</MudChip>
+        <MudChip Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" OnClick="@(() => FilterQueue("Week"))">Week</MudChip>
+        <MudChip Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" OnClick="@(() => FilterQueue("Month"))">Month</MudChip>
+    </MudChipSet>
+@* 
+    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+        <MudButton OnClick='() => FilterQueue("Today")'>Today</MudButton>
+        <MudButton OnClick='() => FilterQueue("Yesterday")'>Yesterday</MudButton>
+        <MudButton OnClick='() => FilterQueue("Week")'>This Week</MudButton>
+        <MudButton OnClick='() => FilterQueue("Month")'>This Month</MudButton>
+    </MudButtonGroup> *@
+</MudStack>
+
+<MudTable Items="QueueState.Value.QueueItems" Loading="QueueState.Value.IsLoading" Hover="true" Dense="true">
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>Report Name</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Queued At</MudTh>
+        <MudTh>Output Path / Result</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="Report Name">@context.ReportName</MudTd>
+        <MudTd DataLabel="Status">
+            <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small">
+                @((QueueStatus)context.Status)
+            </MudChip>
+        </MudTd>
+        <MudTd DataLabel="Queued At">@context.CreatedAtUtc.ToLocalTime().ToString("g")</MudTd>
+        <MudTd DataLabel="Result">
+            @if (!string.IsNullOrEmpty(context.OutputFilePath))
+            {
+                <MudText Typo="Typo.caption">@context.OutputFilePath</MudText>
+            }
+            else if (!string.IsNullOrEmpty(context.ErrorMessage))
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error">@context.ErrorMessage</MudText>
+            }
+        </MudTd>
+        <MudTd DataLabel="Actions">
+            @if (context.Status == (int)QueueStatus.Processing || context.Status == (int)QueueStatus.Pending)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error"
+                               OnClick="() => KillJob(context.Id)" Title="Kill/Cancel Job" />
+            }
+            @if (!string.IsNullOrEmpty(context.OutputFilePath))
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Primary"
+                               OnClick="() => OpenFile(context.OutputFilePath)" Title="Download/View File" />
+                <MudIconButton Icon="@Icons.Material.Filled.Folder" Color="Color.Secondary"
+                               OnClick="() => OpenFolder(context.OutputFilePath)" Title="Open Folder" />
+            }
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private PeriodicTimer? _timer;
+    private readonly CancellationTokenSource _cts = new();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Dispatcher.Dispatch(new FetchReportQueueAction("Today"));
+
+        // Setup Auto Refresh Timer (every 3 seconds)
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
+        _ = RunTimerAsync();
+    }
+
+    private async Task RunTimerAsync()
+    {
+        try
+        {
+            while (await _timer!.WaitForNextTickAsync(_cts.Token))
+            {
+                Dispatcher.Dispatch(new FetchReportQueueAction(QueueState.Value.SelectedFilter));
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected exception when component is disposed
+        }
+    }
+
+    private void FilterQueue(string filter) => Dispatcher.Dispatch(new FetchReportQueueAction(filter));
+
+    private void KillJob(long queueId) => Dispatcher.Dispatch(new CancelQueueItemAction(queueId));
+
+    private async Task OpenFile(string path) => await JS.InvokeVoidAsync("openLocalFile", path);
+
+    private async Task OpenFolder(string path) => await JS.InvokeVoidAsync("openLocalFolder", Path.GetDirectoryName(path));
+
+    private Color GetStatusColor(int status) => (QueueStatus)status switch
+    {
+        QueueStatus.Pending => Color.Warning,
+        QueueStatus.Processing => Color.Info,
+        QueueStatus.Completed => Color.Success,
+        QueueStatus.Failed => Color.Error,
+        QueueStatus.Cancelled => Color.Dark,
+        _ => Color.Default
+    };
+
+    public async ValueTask DisposeAsync()
+    {
+        // 1. Cancel the background loop token
+        _cts.Cancel();
+        _cts.Dispose();
+
+        // 2. Dispose the periodic timer
+        _timer?.Dispose();
+
+        await ValueTask.CompletedTask;
+    }
+}

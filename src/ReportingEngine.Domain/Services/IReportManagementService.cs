@@ -10,4 +10,9 @@ public interface IReportManagementService
     Task<ReportMasterDto> UpdateAsync(ReportMasterDto dto, string user, CancellationToken cancellationToken = default);
     Task DeleteAsync(long id, bool hardDelete = false, CancellationToken cancellationToken = default);
 
+    Task<IEnumerable<ReportParameterDto>> GetParametersByMasterIdAsync(long masterId);
+    Task<ReportRunnerQueueDto> EnqueueReportJobAsync(EnqueueReportRequestDto request);
+    Task<IEnumerable<ReportRunnerQueueDto>> GetQueueItemsAsync(string filter);
+    Task CancelQueueItemAsync(long queueItemId);
+
 }

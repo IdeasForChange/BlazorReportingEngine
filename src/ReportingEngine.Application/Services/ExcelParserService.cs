@@ -12,6 +12,16 @@ public class ExcelParserService : IExcelParserService
         using var workbook = new XLWorkbook(fileStream);
         if (workbook != null && workbook.DefinedNames != null)
         {
+            result = ExtractNamedRanges(workbook);
+        }
+        return result;
+    }
+
+    public List<string> ExtractNamedRanges(IXLWorkbook workbook)
+    {
+        var result = new List<string>();
+        if (workbook != null && workbook.DefinedNames != null)
+        {
             result = workbook.Worksheets
                 .SelectMany(ws => ws.DefinedNames)
                 .Select(nr => nr.Name)

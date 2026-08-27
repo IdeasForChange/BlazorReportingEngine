@@ -4,7 +4,7 @@ using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
 
 namespace Smbc.Risk.ReportingEngine.Application.Mappings;
 
-public class DatabaseMappingProfile :  Profile
+public class DatabaseMappingProfile : Profile
 {
     public DatabaseMappingProfile()
     {

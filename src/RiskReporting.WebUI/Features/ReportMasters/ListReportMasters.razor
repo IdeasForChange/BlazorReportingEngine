@@ -33,7 +33,7 @@
                     HeaderPosition="TabHeaderPosition.After">
 
         @* Main Master Grid Tab *@
-        <MudTabPanel Text="All Reports" Icon="@Icons.Material.Outlined.Dashboard" ShowCloseIcon="false" CanClose="false">
+        <MudTabPanel Text="All Reports" Icon="@Icons.Material.Outlined.Dashboard" ShowCloseIcon="false">
 
             <MudDataGrid T="ReportMasterDto"
                          Loading="@ReportMasterState.Value.IsLoading"

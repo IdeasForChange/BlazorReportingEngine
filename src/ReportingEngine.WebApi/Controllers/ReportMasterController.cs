@@ -20,7 +20,7 @@ public class ReportMasterController(IReportManagementService service) : Controll
     }
 
     [HttpGet("{id:long}")]
-    public async Task<IActionResult> GetById(long id,CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetById(long id, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetByIdAsync(id, cancellationToken);
         return result is null ? NotFound() : Ok(result);
@@ -43,7 +43,7 @@ public class ReportMasterController(IReportManagementService service) : Controll
 
         // Update the report using the service.
         // TODO: Pass the current user or any other necessary information.
-        var updatedReport = await _service.UpdateAsync(dto, "System", cancellationToken); 
+        var updatedReport = await _service.UpdateAsync(dto, "System", cancellationToken);
         return Ok(updatedReport);
     }
 

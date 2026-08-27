@@ -12,6 +12,6 @@ public enum EnvironmentType
     UserAcceptanceTest,
     [Description("Pre-Production")]
     PreProduction,
-    [Description("Production")] 
+    [Description("Production")]
     Production
 }

@@ -14,7 +14,7 @@ public class ReportParameterConfiguration : IEntityTypeConfiguration<ReportParam
         builder.HasKey(e => e.Id);
 
         builder.Property(e => e.Name).HasMaxLength(255).IsRequired();
-        builder.Property(e => e.ParameterType).HasConversion<int>().HasDefaultValue(ParameterType.Text).IsRequired();
+        builder.Property(e => e.ParameterType).HasConversion<int>().HasDefaultValue(ParameterType.String).IsRequired();
         builder.Property(e => e.IsRequired).HasDefaultValue(false).IsRequired();
         builder.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
 

@@ -34,10 +34,11 @@
         <MudSpacer />
 
         @* Theme Toggle Button *@
-        <MudIconButton Icon="@(AppState.Value.IsDarkMode ? Icons.Material.Filled.WbSunny : Icons.Material.Filled.NightsStay)"
-                       Color="Color.Inherit"
-                       OnClick="ToggleTheme"
-                       Title="@(AppState.Value.IsDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")" />
+        <MudTooltip Text="@(AppState.Value.IsDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">   
+            <MudIconButton Icon="@(AppState.Value.IsDarkMode ? Icons.Material.Filled.WbSunny : Icons.Material.Filled.NightsStay)"
+                           Color="Color.Inherit"
+                           OnClick="ToggleTheme" />
+        </MudTooltip>
 
         <MudBadge Content="@AppState.Value.UnreadNotificationCount"
                   Color="Color.Error"
@@ -45,12 +46,13 @@
                   Bordered="true"
                   Visible="@(AppState.Value.UnreadNotificationCount > 0)">
 
-            <MudIconButton Icon="@Icons.Material.Outlined.Notifications"
-                     Size="Size.Medium"
-                     Color="Color.Inherit"
-                     Ripple="true"
-                     Variant="Variant.Outlined"
-                     Title="View Notifications" />
+            <MudTooltip Text="View Notifications">
+                <MudIconButton Icon="@Icons.Material.Outlined.Notifications"
+                            Size="Size.Medium"
+                            Color="Color.Inherit"
+                            Ripple="true"
+                            Variant="Variant.Outlined" />
+            </MudTooltip>
 
         </MudBadge>
 @* 

@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Smbc.Risk.Core.Application.Services;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
 using Smbc.Risk.ReportingEngine.Domain.Repositories;
 using Smbc.Risk.ReportingEngine.Domain.Services;
 using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
-using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 
 namespace Smbc.Risk.ReportingEngine.Application.Services;
 
@@ -43,7 +41,7 @@ public class DatabaseManagementService(
 
     public async Task<DatabaseConnectionDto> UpdateAsync(DatabaseConnectionDto dto, CancellationToken cancellationToken = default)
     {
-        if(dto.Id == null)
+        if (dto.Id == null)
         {
             throw new ArgumentException("Database Connection ID is required for update.");
         }

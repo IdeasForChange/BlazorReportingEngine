@@ -17,6 +17,17 @@ public class ReportRunnerQueueConfiguration : IEntityTypeConfiguration<ReportRun
         builder.HasIndex(e => e.ReportMasterId);
         builder.HasIndex(e => e.Status);
 
+        // Common Table Items
+        builder.Property(e => e.EntityVersion).HasDefaultValue(1).IsRequired();
+        builder.Property(e => e.EntityWrittenAt).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+
+        // Audit Flags
+        builder.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
+        builder.Property(e => e.CreatedBy).HasMaxLength(256).HasDefaultValue("System");
+        builder.Property(e => e.CreatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+        builder.Property(e => e.UpdatedBy).HasMaxLength(256).HasDefaultValue("System");
+        builder.Property(e => e.UpdatedAtUtc).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+
         // Relationship configuration
         builder.HasOne(e => e.ReportMaster)
                .WithMany(m => m.ReportRunnerQueues)

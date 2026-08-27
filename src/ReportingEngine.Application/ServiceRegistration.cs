@@ -23,7 +23,6 @@ public static class ServiceRegistration
 
 
         // Configure all service dependencies
-        services.AddScoped<ISystemParameterTypeService, SystemParameterTypeService>();
         services.AddScoped<IExcelParserService, ExcelParserService>();
         services.AddScoped<IReportManagementService, ReportManagementService>();
         services.AddScoped<IDatabaseManagementService, DatabaseManagementService>();

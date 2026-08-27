@@ -3,7 +3,7 @@ using Smbc.Risk.ReportingEngine.Domain.Repositories;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
 
-internal class DatabaseConnectionRepository(ApplicationDbContext dbContext)
+public class DatabaseConnectionRepository(ApplicationDbContext dbContext)
     : BaseRepository<DatabaseConnection>(dbContext), IDatabaseConnectionRepository
 {
 }

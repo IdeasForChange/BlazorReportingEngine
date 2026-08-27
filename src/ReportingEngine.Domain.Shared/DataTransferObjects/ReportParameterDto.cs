@@ -7,7 +7,7 @@ public class ReportParameterDto
     public long? Id { get; set; }
     public long ReportMasterId { get; set; }
     public string Name { get; set; } = string.Empty;
-    public ParameterType ParameterType { get; set; } = ParameterType.Text;
+    public ParameterType ParameterType { get; set; } = ParameterType.String;
     public bool IsRequired { get; set; } = false;
     public bool IsActive { get; set; } = true;
 }
