@@ -14,119 +14,127 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<div class="d-flex justify-space-between align-center mb-6">
+<div class="d-flex justify-space-between align-center mb-0">
     <div>
         <PageHeader PageTitle="Database Connection"
                     PageSubTitle="Manage connection strings, authentication modes, and environments." />
     </div>
-    <MudButton Variant="Variant.Filled" 
-               Color="Color.Primary" 
-               StartIcon="@Icons.Material.Filled.Add" 
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
                OnClick="OpenAddDialog">
         Add Connection
     </MudButton>
 </div>
 
-<MudPaper Elevation="2" Class="d-flex flex-column flex-grow-1 h-90 w-100 pa-0" Style="min-height: calc(100vh - 250px);">
+<MudPaper Elevation="2" Class="d-flex flex-column flex-grow-1 h-90 w-100 pa-0" Style="min-height: calc(100vh - 200px);">
+    <MudTabs ApplyEffectsToContainer="true" Class="pa-2" Elevation="0" HeaderPosition="TabHeaderPosition.After">
 
-    <MudDataGrid Items="@ConnectionState.Value.Connections"
-                 Loading="@ConnectionState.Value.IsLoading"
-                 Hover="true" 
-                 Bordered="false"
-                 Dense="true" 
-                 Class="ma-2"
-                 QuickFilter="@FilterFunc">
+        @* Main Master Grid Tab *@
+        <MudTabPanel Text="All Connections" Icon="@Icons.Material.Outlined.Dashboard" ShowCloseIcon="false">
 
-        <ToolBarContent>
+            <MudDataGrid Items="@ConnectionState.Value.Connections"
+                         Loading="@ConnectionState.Value.IsLoading"
+                         QuickFilter="@FilterFunc"
+                         Bordered="false"
+                         Outlined="true"
+                         Dense="true"
+                         Hover="true"
+                         Elevation="0">
 
-            <MudTextField @bind-Value="_searchString"
-                          Placeholder="Search by connection or host..."
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Search"
-                          Style="width: 300px;" />
+                <ToolBarContent>
 
-            <MudSpacer />
+                    <MudTextField @bind-Value="_searchString"
+                                  Placeholder="Search by connection or host..."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Style="width: 300px;" />
 
-            <MudTooltip Text="Refresh Data" Placement="Placement.Bottom">
-                <MudIconButton Icon="@Icons.Material.Filled.Refresh"
-                               Color="Color.Success"
-                               Variant="Variant.Outlined"
-                               Class="mr-2"
-                               OnClick="RefreshData" />
-            </MudTooltip>
+                    <MudSpacer />
 
-        </ToolBarContent>
+                    <MudTooltip Text="Refresh Data" Placement="Placement.Bottom">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Success"
+                                       Variant="Variant.Outlined"
+                                       Class="mr-2"
+                                       OnClick="RefreshData" />
+                    </MudTooltip>
 
-        <Columns>
-            <PropertyColumn Property="x => x.ConnectionName" Title="Connection Name" />
-            <PropertyColumn Property="x => x.DatabaseType" Title="Database Type" />
-            <TemplateColumn Title="Environment">
-                <CellTemplate>
-                    @if (context.Item.Environment == Domain.Shared.Enums.EnvironmentType.Production)
-                    {
-                        <MudChip T="string" Color="Color.Error" Size="Size.Small">Production</MudChip>
-                    }
-                    else if (context.Item.Environment == EnvironmentType.UserAcceptanceTest)
-                    {
-                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">UAT</MudChip>
-                    }
-                    else
-                    {
-                        <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.Item.Environment</MudChip>
-                    }
-                </CellTemplate>
-            </TemplateColumn>
-            <PropertyColumn Property="x => x.ServerHost" Title="Host" />
-            <PropertyColumn Property="x => x.DatabaseName" Title="Database" />
-            <TemplateColumn Title="Authentication">
-                <CellTemplate>
-                    @if (context.Item.AuthenticationMethod == DatabaseAuthenticationType.Integrated)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Success">Integrated</MudText>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.body2">User: @context.Item.UserId (••••••)</MudText>
-                    }
-                </CellTemplate>
-            </TemplateColumn>
-            <PropertyColumn Property="x => x.TimeoutSeconds" Title="Timeout (s)" />
-            <TemplateColumn Title="Actions" CellClass="d-flex justify-end">
-                <CellTemplate>
-                    @if (context.Item.IsReadOnly)
-                    {
-                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
-                                       Color="Color.Info" 
-                                       Size="Size.Small" 
-                                       OnClick="@(() => OpenEditDialog(context.Item))" />
-                    }
-                    else
-                    {
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" 
-                                       Color="Color.Primary" 
-                                       Size="Size.Small" 
-                                       OnClick="@(() => OpenEditDialog(context.Item))" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                       Color="Color.Error" 
-                                       Size="Size.Small" 
-                                       OnClick="@(() => DeleteConfig(context.Item))" />
-                    }
-                </CellTemplate>
-            </TemplateColumn>
-        </Columns>
+                </ToolBarContent>
 
-        <NoRecordsContent>
-            <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="py-12">
-                <MudIcon Icon="@Icons.Material.Outlined.Dataset" Size="Size.Large" Color="Color.Primary" />
-                <MudText Typo="Typo.h6" Color="Color.Primary">No Database Connections found</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Primary">Click "Add Connection" or "Refresh" to fetch latest data.</MudText>
-            </MudStack>
-        </NoRecordsContent>
+                <Columns>
+                    <PropertyColumn Property="x => x.ConnectionName" Title="Connection Name" />
+                    <PropertyColumn Property="x => x.DatabaseType" Title="Database Type" />
+                    <TemplateColumn Title="Environment">
+                        <CellTemplate>
+                            @if (context.Item.Environment == Domain.Shared.Enums.EnvironmentType.Production)
+                            {
+                                <MudChip T="string" Color="Color.Error" Size="Size.Small">Production</MudChip>
+                            }
+                            else if (context.Item.Environment == EnvironmentType.UserAcceptanceTest)
+                            {
+                                <MudChip T="string" Color="Color.Warning" Size="Size.Small">UAT</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.Item.Environment</MudChip>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.ServerHost" Title="Host" />
+                    <PropertyColumn Property="x => x.DatabaseName" Title="Database" />
+                    <TemplateColumn Title="Authentication">
+                        <CellTemplate>
+                            @if (context.Item.AuthenticationMethod == DatabaseAuthenticationType.Integrated)
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Success">Integrated</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2">User: @context.Item.UserId (••••••)</MudText>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.TimeoutSeconds" Title="Timeout (s)" />
+                    <TemplateColumn Title="Actions" CellClass="d-flex justify-end">
+                        <CellTemplate>
+                            @if (context.Item.IsReadOnly)
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               OnClick="@(() => OpenEditDialog(context.Item))" />
+                            }
+                            else
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => OpenEditDialog(context.Item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteConfig(context.Item))" />
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
 
-        <PagerContent>
-            <MudDataGridPager T="DatabaseConnectionDto" />
-        </PagerContent>
-    </MudDataGrid>
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="py-12">
+                        <MudIcon Icon="@Icons.Material.Outlined.Dataset" Size="Size.Large" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6" Color="Color.Primary">No Database Connections found</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Primary">Click "Add Connection" or "Refresh" to fetch latest data.</MudText>
+                    </MudStack>
+                </NoRecordsContent>
+
+                <PagerContent>
+                    <MudDataGridPager T="DatabaseConnectionDto" />
+                </PagerContent>
+            </MudDataGrid>
+
+        </MudTabPanel>
+    </MudTabs>
 </MudPaper>
 
 @code {

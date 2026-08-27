@@ -7,7 +7,7 @@
 @inject IDispatcher Dispatcher
 @inject IDialogService DialogService
 
-<div class="d-flex justify-space-between align-center mb-6">
+<div class="d-flex justify-space-between align-center mb-0">
     <div>
         <PageHeader PageTitle="Master Report Management"
                     PageSubTitle="Manage master report templates and their associated metrics." />
@@ -23,7 +23,7 @@
 </div>
 
 @* Styled Workspace Multi-Tabs *@
-<MudPaper Elevation="2" Class="d-flex flex-column flex-grow-1 h-90 w-100 pa-0" Style="min-height: calc(100vh - 250px);">
+<MudPaper Elevation="2" Class="d-flex flex-column flex-grow-1 h-90 w-100 pa-0" Style="min-height: calc(100vh - 200px);">
     <MudDynamicTabs @bind-ActivePanelIndex="_activeTabIndex"
                     CloseTab="CloseTab"
                     ApplyEffectsToContainer="true"
@@ -44,8 +44,6 @@
                          Dense="true"
                          Hover="true"
                          Elevation="0"
-                         Class="d-flex flex-column flex-grow-1"
-                         HeaderClass="mud-theme-primary-text font-weight-bold"
                          EditTrigger="DataGridEditTrigger.OnRowClick">
 
                 <ToolBarContent>

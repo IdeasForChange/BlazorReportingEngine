@@ -58,9 +58,9 @@ public class ReportRunnerWorkflow(
         var metrics = activeTemplate.ReportMetrics;
 
         // Step 3: Deserialize Parameters & Merge into Execution Context
-        if (!string.IsNullOrEmpty(queueItem.ParameterPayloadJson))
+        if (!string.IsNullOrEmpty(queueItem.ParameterValuesJson))
         {
-            var paramsDict = JsonSerializer.Deserialize<Dictionary<string, string>>(queueItem.ParameterPayloadJson);
+            var paramsDict = JsonSerializer.Deserialize<Dictionary<string, string>>(queueItem.ParameterValuesJson);
             if (paramsDict != null)
             {
                 foreach (var kvp in paramsDict)

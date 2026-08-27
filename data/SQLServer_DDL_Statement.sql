@@ -125,6 +125,7 @@ CREATE TABLE [Reporting].[ReportRunnerQueue] (
     [ReportMasterId] BIGINT NOT NULL,
     [Status] INT NOT NULL DEFAULT 1, -- Maps to QueueStatus enum (1 = Pending)
     [ParameterValuesJson] NVARCHAR(MAX) NULL,
+	[ProgressPercentage] INT NOT NULL DEFAULT 1,
     [OutputFilePath] NVARCHAR(1000) NULL,
     [ErrorMessage] NVARCHAR(MAX) NULL,
     [StartedAtUtc] DATETIME2 NULL,

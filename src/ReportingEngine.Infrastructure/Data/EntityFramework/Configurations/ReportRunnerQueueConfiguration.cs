@@ -12,6 +12,8 @@ public class ReportRunnerQueueConfiguration : IEntityTypeConfiguration<ReportRun
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Status).HasConversion<int>().IsRequired();
+        builder.Property(e => e.ParameterValuesJson);
+        builder.Property(e => e.ProgressPercentage);
         builder.Property(e => e.OutputFilePath).HasMaxLength(1000);
 
         builder.HasIndex(e => e.ReportMasterId);
