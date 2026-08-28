@@ -1,0 +1,169 @@
+﻿@page "/help"
+
+<div class="d-flex justify-space-between align-center mb-0">
+    <div>
+        <PageHeader PageTitle="Help"
+                    PageSubTitle="Overview of system capabilities, reporting workflows, and architectural design" />
+    </div>
+</div>
+
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true">
+
+    <!-- TAB 1: USER GUIDE -->
+    <MudTabPanel Text="User Guide & Features" Icon="@Icons.Material.Filled.HelpOutline">
+        <MudGrid Class="pa-6">
+            <MudItem xs="12">
+                <MudCard Elevation="0" Class="h-100">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Primary" Variant="Variant.Filled">
+                                <MudIcon Icon="@Icons.Material.Filled.PlayArrow" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">1. Running Master Jobs</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudList T="string" Dense="true">
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                Select a predefined job template from the dropdown list on the <b>Run Job</b> page.
+                            </MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                Dynamic input controls (Text, Date Pickers, Numeric Fields) automatically generate based on the required report parameters.
+                            </MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                Click <b>Queue Job Execution</b> to send the job payload directly to the background processing queue.
+                            </MudListItem>
+                        </MudList>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudCard Elevation="0" Class="h-100">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Secondary" Variant="Variant.Filled">
+                                <MudIcon Icon="@Icons.Material.Filled.Monitor" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">2. Live Queue Monitoring</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudList T="string" Dense="true">
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                Monitor real-time execution status (Pending, Processing, Completed, Failed, Cancelled) on the <b>Queue Status</b> page.
+                            </MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                Track the automated live countdown progress bar for period grid refreshes.
+                            </MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                Use quick-filter buttons (Today, Yesterday, This Week, This Month) to view execution history.
+                            </MudListItem>
+                        </MudList>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudCard Elevation="0" Class="h-100">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Error" Variant="Variant.Filled">
+                                <MudIcon Icon="@Icons.Material.Filled.Cancel" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">3. Cancelling Running Jobs</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudList T="string" Dense="true">
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                Click the red <b>Cancel/Kill</b> icon next to any job in <i>Pending</i> or <i>Processing</i> status.
+                            </MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                The multithreaded worker instantly signals a thread cancellation token (`CancellationTokenSource`) to abort query execution safely.
+                            </MudListItem>
+                        </MudList>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudCard Elevation="0" Class="h-100">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Success" Variant="Variant.Filled">
+                                <MudIcon Icon="@Icons.Material.Filled.FolderZip" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">4. Accessing Generated Reports</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudList T="string" Dense="true">
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                Completed jobs display actions to download/view the output Excel spreadsheet (`.xlsx`).
+                            </MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.Check">
+                                Click the <b>Folder</b> action icon to open the target output directory natively in Windows Explorer via JS Interop.
+                            </MudListItem>
+                        </MudList>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
+    <!-- TAB 2: TECHNICAL ARCHITECTURE -->
+    <MudTabPanel Text="Technology Stack & Architecture" Icon="@Icons.Material.Filled.Memory">
+        <MudGrid Class="pa-6">
+            <MudItem xs="12">
+                <MudText Typo="Typo.h6" Class="mb-3">System Architecture Pipeline</MudText>
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-6">
+                    <b>Pipeline Flow:</b> MudBlazor / Fluxor UI &rarr; Web API Controller &rarr; Application Service Layer &rarr; EF Core Repository &rarr; SQL Database
+                </MudAlert>
+
+                <MudTable Items="_techStack" Hover="true" Dense="true" Elevation="1" Class="mb-6">
+                    <HeaderContent>
+                        <MudTh>Layer / Capability</MudTh>
+                        <MudTh>Framework / Technology</MudTh>
+                        <MudTh>Purpose & Functionality</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Layer"><b>@context.Layer</b></MudTd>
+                        <MudTd DataLabel="Technology">
+                            <MudChip T="string" Color="@context.ChipColor" Size="Size.Small" Variant="Variant.Filled">
+                                @context.Technology
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Purpose">@context.Purpose</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        </MudGrid>
+
+    </MudTabPanel>
+
+</MudTabs>
+
+@code {
+    private record TechStackItem(string Layer, string Technology, Color ChipColor, string Purpose);
+
+    private readonly List<TechStackItem> _techStack = new()
+    {
+        new("User Interface", "MudBlazor", Color.Info, "Material Design component framework for Blazor Interactive Server."),
+        new("State Management", "Fluxor", Color.Primary, "Unidirectional state architecture (Actions, Reducers, Effects, State) for predictable UI updates."),
+        new("API Layer", "ASP.NET Core Web API", Color.Dark, "RESTful endpoints handling job queue submissions, filtering, and job management."),
+        new("Object Mapping", "AutoMapper", Color.Secondary, "Automated DTO-to-Domain Entity transformations across request pipelines."),
+        new("Data Access Layer", "Entity Framework Core", Color.Surface, "Database context mappings, migrations, and LINQ query execution."),
+        new("Queue Data Access", "Dapper / EF Raw SQL", Color.Warning, "High-performance ADO.NET query execution and atomic locking query routines."),
+        new("Excel Processing", "ClosedXML", Color.Success, "Populates Excel `.xlsx` templates via dynamic Named Range mappings and table themes."),
+        new("Background Processing", "IHostedService / Worker", Color.Tertiary, "Scalable background queue processor handling multi-threaded workflow executions.")
+    };
+}

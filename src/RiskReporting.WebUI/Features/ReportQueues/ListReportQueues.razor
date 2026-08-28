@@ -45,11 +45,11 @@
                     <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-1">
 
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Filter By: </MudText>
-                        <MudChipSet T="string" SelectionMode="SelectionMode.SingleSelection" Variant="Variant.Text" Color="Color.Primary">
-                            <MudChip Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => FilterQueue("Today"))">Today</MudChip>
-                            <MudChip Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => FilterQueue("Yesterday"))">Yesterday</MudChip>
-                            <MudChip Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => FilterQueue("Week"))">Week</MudChip>
-                            <MudChip Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => FilterQueue("Month"))">Month</MudChip>
+                        <MudChipSet T="string" @bind-SelectedValue="SelectedFilter" CheckMark SelectionMode="SelectionMode.SingleSelection" Variant="Variant.Text" Color="Color.Info">
+                            @foreach(var allowedFilter in AllowedFilters)
+                            {
+                                <MudChip Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Text="@allowedFilter" OnClick="@(() => FilterQueue($"{allowedFilter}"))">@allowedFilter</MudChip>
+                            }
                         </MudChipSet>
 
                     </MudStack>
@@ -120,7 +120,7 @@
                 <NoRecordsContent>
                     <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="py-12">
                         <MudIcon Icon="@Icons.Material.Outlined.Queue" Size="Size.Large" Color="Color.Primary" />
-                        <MudText Typo="Typo.h6" Color="Color.Primary">No reports</MudText>
+                        <MudText Typo="Typo.h6" Color="Color.Primary">No Reports found for filter criteria: @SelectedFilter</MudText>
                     </MudStack>
                 </NoRecordsContent>
 
@@ -135,6 +135,10 @@
 </MudPaper>
 
 @code {
+    public Color SelectedColor;
+    public string SelectedFilter = "Today";
+    public IEnumerable<string> AllowedFilters => ["Today", "Yesterday", "Week", "Month"];
+
     private const int RefreshIntervalSeconds = 30;
     private PeriodicTimer? _timer;
     private readonly CancellationTokenSource _cts = new(); 
