@@ -1,0 +1,196 @@
+﻿@using Fluxor
+@using Smbc.Risk.ReportingEngine.WebUI.Features.Notifications.Store
+
+@inherits FluxorComponent
+
+@implements IDisposable
+@inject IState<NotificationState> NotificationState
+@inject IDispatcher Dispatcher
+
+<MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" OffsetY="true">
+    <ActivatorContent>
+
+        <MudBadge Content="@NotificationState.Value.UnreadCount" Color="Color.Error" Visible="@(NotificationState.Value.UnreadCount > 0)" Overlap="true">
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
+                            Color="Color.Inherit" 
+                            OnClick="@context.ToggleAsync"
+                            aria-label="Notifications" />
+        </MudBadge>
+    </ActivatorContent>
+    <ChildContent>
+        <div style="width: 380px; max-width: 90vw;">
+
+            <!-- Header -->
+
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="pa-3">
+                <MudText Typo="Typo.h6">Notifications</MudText>
+                <MudSpacer />
+
+                @if (NotificationState.Value.UnreadCount > 0)
+                {
+                    <MudChip T="int" Size="Size.Small" Color="Color.Primary">@NotificationState.Value.UnreadCount new</MudChip>
+                }
+            </MudStack>
+            <MudDivider />
+            @if (NotificationState.Value.IsLoading)
+            {
+                <div class="pa-4">
+                    <MudProgressLinear Indeterminate="true" />
+                </div>
+            }
+            else if (!NotificationState.Value.Items.Any())
+            {
+                <MudStack AlignItems="AlignItems.Center" Class="pa-6">
+                    <MudIcon Icon="@Icons.Material.Filled.NotificationsNone" Size="Size.Large" />
+                    <MudText>No notifications</MudText>
+                </MudStack>
+            }
+            else
+            {
+                <MudList T="Notification" Dense="true" Class="pa-0">
+                @foreach (var notification in NotificationState.Value.Items)
+                {
+                    <MudListItem>
+
+                        <div class="notification-row
+                            @(notification.IsRead
+                                ? ""
+                                : "notification-unread")"
+                                @onclick="@(() => OpenNotification(notification))">
+
+                            <MudIcon Icon="@Icons.Material.Filled.Notifications"
+                                        Color="@(notification.IsRead
+                                            ? Color.Default
+                                            : Color.Primary)"
+                                        Class="mr-3 mt-1" />
+
+                            <div class="notification-content">
+
+                                <MudText Typo="Typo.subtitle2">
+                                    @notification.Title
+                                </MudText>
+
+                                <MudText Typo="Typo.body2"
+                                            Color="Color.Secondary">
+                                    @notification.Message
+                                </MudText>
+
+                                <MudText Typo="Typo.caption"
+                                            Color="Color.Secondary">
+                                    @FormatDate(notification.CreatedAt)
+                                </MudText>
+
+                            </div>
+
+                            @if (!notification.IsRead)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Circle"
+                                            Color="Color.Primary"
+                                            Size="Size.Small"
+                                            Class="mt-2" />
+                            }
+
+                        </div>
+
+                    </MudListItem>
+                }
+                </MudList>
+            }
+
+            <MudDivider />
+
+            <MudButton Variant="Variant.Text"
+                        Color="Color.Primary"
+                        FullWidth="true"
+                        Class="my-1"
+                        OnClick="ViewAllNotifications">
+                View all notifications
+            </MudButton>
+
+        </div>
+
+    </ChildContent>
+
+</MudMenu>
+
+<style>
+    .notification-row {
+        display: flex;
+        width: 100%;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+        .notification-row:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+
+    .notification-unread {
+        background-color: rgba(25, 118, 210, 0.06);
+    }
+
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+    }
+</style>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        NotificationState.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged(object? sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NotificationState.StateChanged -= OnStateChanged;
+    }
+
+    private void OpenNotification(Notification notification)
+    {
+        if (!notification.IsRead)
+        {
+            Dispatcher.Dispatch(
+                new MarkNotificationReadAction(notification.Id));
+        }
+
+        // Navigate to the notification target.
+        //
+        // NavigationManager.NavigateTo(
+        //     $"/notifications/{notification.Id}");
+    }
+
+    private void ViewAllNotifications()
+    {
+        // NavigationManager.NavigateTo("/notifications");
+    }
+
+    private static string FormatDate(DateTime date)
+    {
+        var elapsed =
+            DateTime.UtcNow - date.ToUniversalTime();
+
+        if (elapsed.TotalMinutes < 1)
+            return "Just now";
+
+        if (elapsed.TotalMinutes < 60)
+            return $"{(int)elapsed.TotalMinutes}m ago";
+
+        if (elapsed.TotalHours < 24)
+            return $"{(int)elapsed.TotalHours}h ago";
+
+        if (elapsed.TotalDays < 7)
+            return $"{(int)elapsed.TotalDays}d ago";
+
+        return date.ToLocalTime()
+            .ToString("dd MMM yyyy");
+    }
+
+}

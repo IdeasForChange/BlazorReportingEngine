@@ -1,4 +1,5 @@
 ﻿@using MudBlazor
+@using Smbc.Risk.ReportingEngine.WebUI.Features.Notifications
 @using Smbc.Risk.ReportingEngine.WebUI.Features.Themes.Store
 @inherits LayoutComponentBase
 
@@ -23,7 +24,7 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="1" Dense="true">
+    <MudAppBar Elevation="1" Dense="false">
         <MudIconButton Icon="@Icons.Material.Filled.Menu"
                        Color="Color.Inherit"
                        Edge="Edge.Start"
@@ -33,14 +34,18 @@
         
         <MudSpacer />
 
+
+        <NotificationsList />
+
         @* Theme Toggle Button *@
-        <MudTooltip Text="@(AppState.Value.IsDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">   
+        <MudTooltip Text="@(AppState.Value.IsDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">
             <MudIconButton Icon="@(AppState.Value.IsDarkMode ? Icons.Material.Filled.WbSunny : Icons.Material.Filled.NightsStay)"
                            Color="Color.Inherit"
                            OnClick="ToggleTheme" />
         </MudTooltip>
 
-        <MudBadge Content="@AppState.Value.UnreadNotificationCount"
+
+@*         <MudBadge Content="@AppState.Value.UnreadNotificationCount"
                   Color="Color.Error"
                   Overlap="true"
                   Bordered="true"
@@ -54,7 +59,7 @@
                             Variant="Variant.Outlined" />
             </MudTooltip>
 
-        </MudBadge>
+        </MudBadge> *@
 @* 
         <MudBadge Color="Color.Success" Overlap="true" Bordered="true">
             <MudAvatar>

@@ -1,6 +1,7 @@
 ﻿using Fluxor;
 using MudBlazor;
 using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
+using Smbc.Risk.ReportingEngine.WebUI.Features.Notifications.Store;
 using Smbc.Risk.ReportingEngine.WebUI.Features.ReportMasters.Store;
 
 namespace Smbc.Risk.ReportingEngine.WebUI.Features.DatabaseConnections.Store;
@@ -36,29 +37,33 @@ public static class DatabaseConnectionReducers
     }
 }
 
-public class DatabaseConnectionEffects(HttpClient httpClient, IConfiguration configuration, ISnackbar snackbar)
+public class DatabaseConnectionEffects(
+    HttpClient httpClient, 
+    IConfiguration configuration, 
+    ISnackbar snackbar)
 {
-    private readonly HttpClient _httpClient = httpClient;
-    private readonly IConfiguration _configuration = configuration;
-    private readonly ISnackbar _snackbar = snackbar;
-    private string? apiEndpoint => $"{_configuration?.GetValue<string>("REPORT_MANAGEMENT_API")}DatabaseConnection";
+    private string? apiEndpoint => $"{configuration?.GetValue<string>("REPORT_MANAGEMENT_API")}DatabaseConnection";
 
     [EffectMethod]
     public async Task HandleFetch(FetchDatabaseConnectionAction action, IDispatcher dispatcher)
     {
         try
         {
-            var connections = await _httpClient.GetFromJsonAsync<List<DatabaseConnectionDto>>(apiEndpoint) ?? [];
+            var connections = await httpClient.GetFromJsonAsync<List<DatabaseConnectionDto>>(apiEndpoint) ?? [];
+
             dispatcher.Dispatch(new FetchDatabaseConnectionSuccessAction(connections));
+            dispatcher.Dispatch(new ShowInfoAction($"Connections Loaded Successfuly.", "Database Connection"));
+
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             // Dispatch a failure action instead of throwing so the circuit stays alive
-            _snackbar.Add($"Unauthorized: Please log in again.: {ex.Message}", Severity.Error);
+            dispatcher.Dispatch(new ShowInfoAction($"Unauthorized: Please log in again.: {ex.Message}", "Database Connection"));
+            snackbar.Add($"Unauthorized: Please log in again.: {ex.Message}", Severity.Error);
         }
         catch (Exception ex)
         {
-            _snackbar.Add($"Unable to load database connections: {ex.Message}", Severity.Error);
+            snackbar.Add($"Unable to load database connections: {ex.Message}", Severity.Error);
         }
     }
 
@@ -69,17 +74,17 @@ public class DatabaseConnectionEffects(HttpClient httpClient, IConfiguration con
         {
             if (action.Connection.Id == null)
             {
-                await _httpClient.PostAsJsonAsync(apiEndpoint, action.Connection);
-                _snackbar.Add($"Database Connection '{action.Connection.ConnectionName}' saved successfully.", Severity.Success);
+                await httpClient.PostAsJsonAsync(apiEndpoint, action.Connection);
+                snackbar.Add($"Database Connection '{action.Connection.ConnectionName}' saved successfully.", Severity.Success);
             }
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            _snackbar.Add($"Unauthorized: Please log in again.: {ex.Message}", Severity.Error);
+            snackbar.Add($"Unauthorized: Please log in again.: {ex.Message}", Severity.Error);
         }
         catch (Exception ex)
         {
-            _snackbar.Add($"Unable to load database connections: {ex.Message}", Severity.Error);
+            snackbar.Add($"Unable to load database connections: {ex.Message}", Severity.Error);
         }
 
         dispatcher.Dispatch(new FetchDatabaseConnectionAction());
@@ -94,21 +99,21 @@ public class DatabaseConnectionEffects(HttpClient httpClient, IConfiguration con
         {
             if (action.Connection.Id > 0)
             {
-                await _httpClient.PutAsJsonAsync($"{apiEndpoint}/{action.Connection.Id}", action.Connection);
-                _snackbar.Add(successMessage, Severity.Success);
+                await httpClient.PutAsJsonAsync($"{apiEndpoint}/{action.Connection.Id}", action.Connection);
+                snackbar.Add(successMessage, Severity.Success);
             }
             else
             {
-                _snackbar.Add(errorMessage, Severity.Error);
+                snackbar.Add(errorMessage, Severity.Error);
             }
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            _snackbar.Add($"Unauthorized: Please log in again.: {ex.Message}", Severity.Error);
+            snackbar.Add($"Unauthorized: Please log in again.: {ex.Message}", Severity.Error);
         }
         catch (Exception ex)
         {
-            _snackbar.Add($"Unable to update database connection: {ex.Message}", Severity.Error);
+            snackbar.Add($"Unable to update database connection: {ex.Message}", Severity.Error);
         }
         dispatcher.Dispatch(new FetchDatabaseConnectionAction());
     }
@@ -116,7 +121,7 @@ public class DatabaseConnectionEffects(HttpClient httpClient, IConfiguration con
     [EffectMethod]
     public async Task HandleDelete(DeleteReportMasterAction action, IDispatcher dispatcher)
     {
-        await _httpClient.DeleteAsync($"{apiEndpoint}/{action.Id}");
+        await httpClient.DeleteAsync($"{apiEndpoint}/{action.Id}");
         dispatcher.Dispatch(new FetchDatabaseConnectionAction());
     }
 }
