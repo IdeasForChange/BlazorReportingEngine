@@ -1,6 +1,8 @@
-﻿@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+﻿@using System.Text.Json
+@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
 @using Smbc.Risk.ReportingEngine.Domain.Shared.Enums
 @using Smbc.Risk.ReportingEngine.WebUI.Features.ReportMasters.Store
+@using Smbc.Risk.ReportingEngine.WebUI.Features.ReportQueues.Store
 
 @* @inject IReportRepository Repo *@
 @inject ISnackbar Snackbar
@@ -22,13 +24,15 @@
 
     <DialogContent>
         <MudCard Class="pa-2" Elevation="0">
-            <MudForm @ref="_form">
-                <MudSelect  T="long" 
-                            Label="Select Report Job" 
-                            ValueChanged="OnJobSelected" 
-                            AnchorOrigin="Origin.BottomCenter"
-                            Variant="Variant.Outlined"
-                            Margin="Margin.Dense">
+            <MudForm @ref="_form" @bind-IsValid="_isValid">
+                <MudSelect T="long" 
+                           Label="Select Job"
+                           Placeholder="-- Select a Job to run --"
+                           ValueChanged="OnJobSelected" 
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Required="true"
+                           Clearable="true">
                     @foreach (var job in ReportMasterState.Value.Reports)
                     {
                         <MudSelectItem Value="@job.Id">@job.Name</MudSelectItem>
@@ -98,7 +102,7 @@
     private List<ReportParameterDto> _parameters = new();
     private Dictionary<string, string> _paramValues = new();
     private ReportMasterDto _selectedJob;
-    private SaveReportMasterDto _model = new();
+    private EnqueueReportRequestDto _model = new();
     private MudForm _form = default!;
     private bool _isValid;
     private bool _isSubmitting;
@@ -112,26 +116,26 @@
 
     private async Task OnJobSelected(long selectedJobId)
     {
-        var selectedJob = ReportMasterState.Value.Reports?.Where(p => p.Id == selectedJobId).FirstOrDefault();
-        if(selectedJob != null)
+        if(selectedJobId > 0)
         {
-            _parameters = selectedJob.ReportParameters.ToList();
+            _selectedJob = ReportMasterState.Value.Reports?.Where(p => p.Id == selectedJobId).FirstOrDefault();
+            if (_selectedJob != null)
+            {
+                _parameters = _selectedJob.ReportParameters.ToList();
+                _paramValues = _parameters.ToDictionary(p => p.Name, p => string.Empty);
+            }
         }
-        //_paramValues = _parameters.ToDictionary(p => p.Name, p => string.Empty);
-    }
-
-    private async Task EnqueueJob()
-    {
-        //var json = JsonSerializer.Serialize(_paramValues);
-        //await Repo.EnqueueReportAsync(_selectedJobId, json);
-        Snackbar.Add("Job successfully enqueued!", Severity.Success);
+        else
+        {
+            await ResetForm();
+        }
     }
 
     private void Cancel() => MudDialog.Cancel();
     private async Task ResetForm()
     {
         _parameters = [];
-        _model = new SaveReportMasterDto();
+        _model = new EnqueueReportRequestDto();
         _isValid = false;
         await _form.ResetAsync();
     }
@@ -139,5 +143,18 @@
     private async Task Submit()
     {
         await _form.ValidateAsync();
+        if (_isValid)
+        {
+            var json = JsonSerializer.Serialize(_paramValues);
+
+            var reportRequest = new EnqueueReportRequestDto
+            {
+                ReportMasterId = _selectedJob.Id,
+                ParameterValuesJson = json,
+                CreatedBy = "CurrentUser" // Replace with actual user context
+            };
+
+            Dispatcher.Dispatch(new RunReportAction(reportRequest));
+        }
     }
 }

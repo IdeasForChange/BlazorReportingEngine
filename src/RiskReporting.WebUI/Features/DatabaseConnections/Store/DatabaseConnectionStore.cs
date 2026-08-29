@@ -70,8 +70,8 @@ public class DatabaseConnectionEffects(HttpClient httpClient, IConfiguration con
             if (action.Connection.Id == null)
             {
                 await _httpClient.PostAsJsonAsync(apiEndpoint, action.Connection);
+                _snackbar.Add($"Database Connection '{action.Connection.ConnectionName}' saved successfully.", Severity.Success);
             }
-            _snackbar.Add($"Report '{action.Connection.ConnectionName}' saved successfully.", Severity.Success);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -79,7 +79,7 @@ public class DatabaseConnectionEffects(HttpClient httpClient, IConfiguration con
         }
         catch (Exception ex)
         {
-            _snackbar.Add($"Unable to load reports: {ex.Message}", Severity.Error);
+            _snackbar.Add($"Unable to load database connections: {ex.Message}", Severity.Error);
         }
 
         dispatcher.Dispatch(new FetchDatabaseConnectionAction());

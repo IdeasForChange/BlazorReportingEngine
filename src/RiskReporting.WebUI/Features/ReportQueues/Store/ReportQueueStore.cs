@@ -16,6 +16,7 @@ public record ReportQueueState(bool IsLoading, IEnumerable<ReportRunnerQueueDto>
 // Actions
 public record FetchReportQueueAction(string Filter);
 public record FetchReportQueueSuccessAction(IEnumerable<ReportRunnerQueueDto> Items);
+public record RunReportAction(EnqueueReportRequestDto ReportRequest);
 public record CancelQueueItemAction(long QueueItemId);
 
 // Reducer
@@ -45,6 +46,27 @@ public class ReportQueueEffects(HttpClient httpClient, IConfiguration configurat
         {
             var reports = await _httpClient.GetFromJsonAsync<IEnumerable<ReportRunnerQueueDto>>($"{apiEndpoint}/queue?filter={action.Filter}");
             dispatcher.Dispatch(new FetchReportQueueSuccessAction(reports ?? []));
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            // Dispatch a failure action instead of throwing so the circuit stays alive
+            _snackbar.Add($"Unauthorized: Please log in again.: {ex.Message}", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            _snackbar.Add($"Unable to load report queues: {ex.Message}", Severity.Error);
+        }
+    }
+
+    [EffectMethod]
+    public async Task HandleRunReport(RunReportAction action, IDispatcher dispatcher)
+    {
+        try
+        {
+            await _httpClient.PostAsJsonAsync($"{apiEndpoint}/enqueue", action.ReportRequest);
+            _snackbar.Add($"Report enqueued successfully.", Severity.Success);
+
+            dispatcher.Dispatch(new FetchReportQueueAction("Today"));
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
