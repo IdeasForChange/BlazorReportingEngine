@@ -5,14 +5,28 @@
 @inject ISnackbar Snackbar
 
 <MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+            <MudIconButton Icon="@Icons.Material.Outlined.Assessment" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" />
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h6">Create a new Database Connection</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Primary">
+                    Create global Database Connections which can be used for reporting query.
+                </MudText>
+            </MudStack>
+        </MudStack>
+    </TitleContent>
+
     <DialogContent>
         <MudForm @ref="_form" @bind-IsValid="_isValid">
-            <MudGrid>
+            <MudGrid Spacing="1">
                 @* Connection Name & Environment *@
                 <MudItem xs="12" sm="6">
                     <MudTextField @bind-Value="Model.ConnectionName"
                                   Label="Connection Name"
                                   Required="true"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
                                   RequiredError="Connection name is required"
                                   Validation="@(new Func<string, string?>(ValidateNameUniqueness))"
                                   Disabled="Model.IsReadOnly" />
@@ -22,7 +36,9 @@
                     <MudSelect T="EnvironmentType"
                                Label="Environment"
                                @bind-Value="Model.Environment"
-                               Disabled="Model.IsReadOnly">
+                               Disabled="Model.IsReadOnly"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense">
                         @foreach (EnvironmentType env in Enum.GetValues(typeof(EnvironmentType)))
                         {
                             <MudSelectItem Value="@env">@env.ToString()</MudSelectItem>
@@ -35,7 +51,9 @@
                     <MudSelect T="DatabaseType"
                                Label="Database Type"
                                @bind-Value="Model.DatabaseType"
-                               Disabled="Model.IsReadOnly">
+                               Disabled="Model.IsReadOnly"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense">
                         @foreach (DatabaseType dbType in Enum.GetValues(typeof(DatabaseType)))
                         {
                             <MudSelectItem Value="@dbType">@dbType.ToString()</MudSelectItem>
@@ -48,7 +66,9 @@
                                      Label="Timeout (Seconds)"
                                      Min="1"
                                      Max="300"
-                                     Disabled="Model.IsReadOnly" />
+                                     Disabled="Model.IsReadOnly"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense" />
                 </MudItem>
 
                 @* Host & Database Name *@
@@ -56,20 +76,26 @@
                     <MudTextField @bind-Value="Model.ServerHost"
                                   Label="Server / Host"
                                   Required="true"
-                                  Disabled="Model.IsReadOnly" />
+                                  Disabled="Model.IsReadOnly"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
                 </MudItem>
 
                 <MudItem xs="12" sm="4">
                     <MudNumericField @bind-Value="Model.Port"
                                      Label="Port"
-                                     Disabled="Model.IsReadOnly" />
+                                     Disabled="Model.IsReadOnly"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense" />
                 </MudItem>
 
                 <MudItem xs="12">
                     <MudTextField @bind-Value="Model.DatabaseName"
                                   Label="Database Name"
                                   Required="true"
-                                  Disabled="Model.IsReadOnly" />
+                                  Disabled="Model.IsReadOnly"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
                 </MudItem>
 
                 @* Authentication Settings *@
@@ -89,7 +115,9 @@
                                       Label="User ID"
                                       Required="true"
                                       RequiredError="User ID is required"
-                                      Disabled="Model.IsReadOnly" />
+                                      Disabled="Model.IsReadOnly"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
                     </MudItem>
 
                     <MudItem xs="12" sm="6">
@@ -98,24 +126,34 @@
                                       InputType="InputType.Password"
                                       Required="true"
                                       RequiredError="Password is required"
-                                      Disabled="Model.IsReadOnly" />
+                                      Disabled="Model.IsReadOnly"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
                     </MudItem>
                 }
             </MudGrid>
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        @if (!Model.IsReadOnly)
-        {
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Save Configuration</MudButton>
-        }
+        <MudStack Row="true" Spacing="2" Justify="Justify.FlexEnd" Style="width: 100%;" Class="px-6 pb-4 pt-2">
+            <MudButton Variant="Variant.Outlined" Color="Color.Warning" OnClick="Cancel" StartIcon="@Icons.Material.Filled.Cancel">
+                Cancel
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Tertiary" OnClick="ResetForm" StartIcon="@Icons.Material.Filled.LockReset">
+                Reset
+            </MudButton>
+            @if (!Model.IsReadOnly)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit" Disabled="@(!_isValid)" StartIcon="@Icons.Material.Filled.Save">
+                    Save Connection
+                </MudButton>
+            }
+        </MudStack>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
-
     [Parameter] public DatabaseConnectionDto Model { get; set; } = new();
     [Parameter] public List<DatabaseConnectionDto> ExistingConfigs { get; set; } = new();
     [Parameter] public bool IsEdit { get; set; }
@@ -135,6 +173,13 @@
             : null;
     }
 
+    private void Cancel() => MudDialog.Cancel();
+    private async Task ResetForm()
+    {
+        //_model = new SaveReportMasterDto();
+        _isValid = false;
+        await _form.ResetAsync();
+    }
     private async Task Submit()
     {
         await _form.ValidateAsync();
@@ -143,6 +188,4 @@
             MudDialog.Close(DialogResult.Ok(Model));
         }
     }
-
-    private void Cancel() => MudDialog.Cancel();
 }

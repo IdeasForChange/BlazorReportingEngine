@@ -7,6 +7,7 @@
 @inject IState<ReportQueueState> QueueState
 @inject IDispatcher Dispatcher
 @inject IJSRuntime JS
+@inject IDialogService DialogService
 @implements IAsyncDisposable
 
 <div class="d-flex justify-space-between align-center mb-0">
@@ -17,7 +18,8 @@
 
     <MudButton Variant="Variant.Filled"
                Color="Color.Primary"
-               StartIcon="@Icons.Material.Filled.Add">
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="OpenAddDialog">
         Run a new Report
     </MudButton>
 
@@ -201,6 +203,17 @@
         QueueStatus.Cancelled => Color.Dark,
         _ => Color.Default
     };
+
+    private async Task OpenAddDialog()
+    {
+        var dialog = await DialogService.ShowAsync<ScheduleNewReport>();
+        var result = await dialog.Result;
+        // if (result != null && !result.Canceled && result.Data is SaveReportMasterDto dto)
+        // {
+        //     // Dispatcher.Dispatch(new SaveReportMasterAction(dto));
+        //     // RefreshData();
+        // }
+    }
 
     public async ValueTask DisposeAsync()
     {
