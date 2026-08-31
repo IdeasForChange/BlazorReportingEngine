@@ -16,7 +16,7 @@ public record NotificationState
     public IReadOnlyList<Notification> Items { get; init; } = [];
     public bool IsLoading { get; init; }
 
-    public int UnreadCount =>  Items.Count(x => !x.IsRead);
+    public int UnreadCount => Items.Count(x => !x.IsRead);
 }
 
 public record LoadNotificationsAction;
@@ -78,7 +78,7 @@ public class NotificationEffects(ISnackbar snackbar, IState<NotificationState> n
     [EffectMethod]
     public async Task MarkAsRead(MarkNotificationReadAction action, IDispatcher dispatcher)
     {
-        var notifications = _notificationState.Value.Items.ToList(); 
+        var notifications = _notificationState.Value.Items.ToList();
         var notification = notifications.FirstOrDefault(n => n.Id == action.Id);
         if (notification == null)
             return;

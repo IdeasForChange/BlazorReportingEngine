@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Smbc.Risk.ReportingEngine.Application.Interfaces;
 using Smbc.Risk.ReportingEngine.Domain.Repositories;
 using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
+using Smbc.Risk.ReportingEngine.Infrastructure.BackgroundServices;
 using Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework;
 using Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Repositories;
 using Smbc.Risk.ReportingEngine.Infrastructure.Services;
@@ -39,8 +40,8 @@ public static class ServiceRegistration
         services.AddTransient<IDatabaseConnectionRepository, DatabaseConnectionRepository>();
         services.AddTransient<IReportRunnerQueueRepository, ReportRunnerQueueRepository>();
 
-        // 4. Background Multi-Threaded Execution Engine
-        //services.AddHostedService<ReportRunnerWorker>();
+        // Configure Background Services
+        services.AddSingleton<ReportRunnerQueueWorker>();
 
         return services;
     }

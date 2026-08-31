@@ -14,5 +14,4 @@ public interface IReportManagementService
     Task<ReportRunnerQueueDto> EnqueueReportJobAsync(EnqueueReportRequestDto request);
     Task<IEnumerable<ReportRunnerQueueDto>> GetQueueItemsAsync(string filter);
     Task CancelQueueItemAsync(long queueItemId);
-
 }

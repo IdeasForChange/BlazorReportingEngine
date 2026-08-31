@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Smbc.Risk.Core.Application.Services;
 using Smbc.Risk.ReportingEngine.Application.Services;
+using Smbc.Risk.ReportingEngine.Domain.Entities;
 using Smbc.Risk.ReportingEngine.Domain.Services;
 
 namespace Smbc.Risk.ReportingEngine.Application;
@@ -21,11 +22,13 @@ public static class ServiceRegistration
         });
         mapperConfiguraion.AssertConfigurationIsValid();
 
+        services.AddSingleton<ReportJobChannel>();
 
         // Configure all service dependencies
         services.AddScoped<IExcelParserService, ExcelParserService>();
         services.AddScoped<IReportManagementService, ReportManagementService>();
         services.AddScoped<IDatabaseManagementService, DatabaseManagementService>();
+        services.AddScoped<IReportRunnerQueueService, ReportRunnerQueueService>();
 
         return services;
     }

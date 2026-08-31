@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Smbc.Risk.ReportingEngine.Application;
 using Smbc.Risk.ReportingEngine.Infrastructure;
+using Smbc.Risk.ReportingEngine.Infrastructure.BackgroundServices;
 
 namespace Smbc.Risk.ReportingEngine.WebApi;
 
@@ -20,6 +21,9 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        // Register the hosted service to run the background worker
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<ReportRunnerQueueWorker>());
 
         // API Versioning
         var apiVersioningBuilder = builder.Services.AddApiVersioning(options =>

@@ -38,8 +38,8 @@ public static class DatabaseConnectionReducers
 }
 
 public class DatabaseConnectionEffects(
-    HttpClient httpClient, 
-    IConfiguration configuration, 
+    HttpClient httpClient,
+    IConfiguration configuration,
     ISnackbar snackbar)
 {
     private string? apiEndpoint => $"{configuration?.GetValue<string>("REPORT_MANAGEMENT_API")}DatabaseConnection";

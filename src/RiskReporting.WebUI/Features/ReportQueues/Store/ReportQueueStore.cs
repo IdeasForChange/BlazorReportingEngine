@@ -1,8 +1,6 @@
 ﻿using Fluxor;
 using MudBlazor;
 using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects;
-using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
-using Smbc.Risk.ReportingEngine.WebUI.Features.ReportMasters.Store;
 
 namespace Smbc.Risk.ReportingEngine.WebUI.Features.ReportQueues.Store;
 

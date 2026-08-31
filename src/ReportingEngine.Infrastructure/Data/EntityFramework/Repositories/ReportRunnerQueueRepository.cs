@@ -8,13 +8,13 @@ namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Reposito
 public class ReportRunnerQueueRepository(ApplicationDbContext dbContext)
     : BaseRepository<ReportRunnerQueue>(dbContext), IReportRunnerQueueRepository
 {
-    public async Task<ReportRunnerQueue?> GetNextPendingItemAsync()
+    public async Task<ReportRunnerQueue?> GetNextPendingJobAsync(CancellationToken cancellationToken = default)
     {
         // Pessimistic Locking with EF Core Execution via raw SQL or transaction block
         var pendingItem = await _dbContext.ReportRunnerQueues
             .Where(q => q.Status == QueueStatus.Pending && q.IsActive)
             .OrderBy(q => q.CreatedAtUtc)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (pendingItem != null)
         {
@@ -24,6 +24,35 @@ public class ReportRunnerQueueRepository(ApplicationDbContext dbContext)
         }
 
         return pendingItem;
+    }
+
+    public async Task<List<long>> ClaimPendingJobIdsAsync(int batchSize, CancellationToken cancellationToken)
+    {
+        // Fetch pending jobs ordering by creation time
+        var pendingJobs = await _dbContext.ReportRunnerQueues
+            .Where(q => q.Status == QueueStatus.Pending && q.IsActive)
+            .OrderBy(q => q.CreatedAtUtc)
+            .Take(batchSize)
+            .ToListAsync(cancellationToken);
+
+        var claimedIds = new List<long>();
+
+        foreach (var job in pendingJobs)
+        {
+            // Mark as Processing immediately so another thread or app instance doesn't pick it up
+            job.Status = QueueStatus.Processing;
+            job.StartedAtUtc = DateTime.UtcNow;
+            job.UpdatedAtUtc = DateTime.UtcNow;
+            job.UpdatedBy = "JobProcessor-Claimed";
+            claimedIds.Add(job.Id);
+        }
+
+        if (claimedIds.Any())
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return claimedIds;
     }
 
     public async Task<IEnumerable<ReportRunnerQueue>> GetQueueByFilterAsync(string filter)
@@ -46,17 +75,31 @@ public class ReportRunnerQueueRepository(ApplicationDbContext dbContext)
             .ToListAsync();
     }
 
-    public async Task UpdateQueueStatusAsync(long queueItemId, QueueStatus status, string? errorMessage = null)
+    public async Task UpdateJobStatusAsync(long jobId, QueueStatus status, int progress, string? outputFilePath = null, string? errorMessage = null, CancellationToken cancellationToken = default)
     {
-        var item = await _dbContext.ReportRunnerQueues.FindAsync(queueItemId);
-        if (item != null)
+        var job = await _dbContext.ReportRunnerQueues.FindAsync(new object[] { jobId }, cancellationToken);
+        if (job == null) return;
+
+        job.Status = status;
+        job.ProgressPercentage = progress;
+        job.UpdatedBy = "JobProcessor";
+        job.UpdatedAtUtc = DateTime.UtcNow;
+
+        if (status == QueueStatus.Processing && job.StartedAtUtc == null) // Processing
         {
-            item.Status = status;
-            item.ErrorMessage = errorMessage;
-            item.UpdatedAtUtc = DateTime.UtcNow;
-            await _dbContext.SaveChangesAsync();
+            job.StartedAtUtc = DateTime.UtcNow;
         }
+        if (status == QueueStatus.Completed || status == QueueStatus.Failed) // Completed or Failed
+        {
+            job.CompletedAtUtc = DateTime.UtcNow;
+        }
+
+        if (outputFilePath != null) job.OutputFilePath = outputFilePath;
+        if (errorMessage != null) job.ErrorMessage = errorMessage;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
+
 
     public async Task CompleteQueueItemAsync(long queueItemId, string outputFilePath)
     {

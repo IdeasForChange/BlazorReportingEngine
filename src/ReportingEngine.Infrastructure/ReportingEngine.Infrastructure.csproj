@@ -25,8 +25,4 @@
     <ProjectReference Include="..\ReportingEngine.Application\ReportingEngine.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="BackgroundWorkers\" />
-  </ItemGroup>
-
 </Project>
