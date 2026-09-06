@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DocumentFormat.OpenXml.Office2016.Drawing.Charts;
 using Microsoft.Extensions.Logging;
 using Smbc.Risk.Core.Application.Services;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
@@ -37,15 +38,27 @@ public class ReportManagementService(
     public async Task<ReportMasterDto> CreateReportAsync(SaveReportMasterDto dto, CancellationToken cancellationToken = default)
     {
         // 1. Save file locally or to storage path
-        // TODO: Use configuration from the json file.
-        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+        var uploadDir = dto.UploadDirectory;
         Directory.CreateDirectory(uploadDir);
-        var filePath = Path.Combine(uploadDir, $"{Guid.NewGuid()}_{dto.FileName}");
+
+        var modifiedFileName = $"{Guid.NewGuid()}_{dto.FileName}";
+        var filePath = Path.Combine(uploadDir, modifiedFileName);
         await File.WriteAllBytesAsync(filePath, dto.FileBytes);
 
         // 2. Parse Named Ranges from Excel
         using var stream = new MemoryStream(dto.FileBytes);
         var namedRanges = _excelParserService.ExtractNamedRanges(stream);
+
+        var filteredRanges = new List<string>();
+        if (namedRanges.Count > 0 && !string.IsNullOrWhiteSpace(dto.DefinedNameFilters))
+        {
+            var filters = dto.DefinedNameFilters.Replace("*", string.Empty).Split([',']);
+            foreach (var filter in filters)
+            {
+                // Add the filtered items if it matches the criteria specified.
+                filteredRanges.AddRange(namedRanges.Where(p => p.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList());
+            }
+        }
 
         // 3. Construct Entity & Metrics
         var report = new ReportMaster
@@ -58,10 +71,12 @@ public class ReportManagementService(
             [
                 new()
                 {
-                    TemplateFileName = dto.FileName,
-                    TemplatePath = filePath,
+                    OriginalFileName = dto.FileName,
+                    UploadedFileName = modifiedFileName,
+                    TemplatePath = uploadDir,
                     TemplateVersion = 1,
-                    ReportMetrics = [.. namedRanges.Select(nr => new ReportMetric
+                    DefinedNameFilters = string.Join(",", filteredRanges),
+                    ReportMetrics = [.. filteredRanges.Select(nr => new ReportMetric
                     {
                         NamedRange = nr
                     })]

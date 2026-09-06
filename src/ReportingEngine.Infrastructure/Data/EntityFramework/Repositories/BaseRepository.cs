@@ -79,5 +79,4 @@ public abstract class BaseRepository<T>(ApplicationDbContext dbContext) : IBaseR
     {
         return await _dbContext.Set<T>().AsNoTracking().Where(predicate).ToListAsync();
     }
-
 }

@@ -1,10 +1,13 @@
 ﻿@using MudBlazor
 @using Smbc.Risk.ReportingEngine.WebUI.Features.Notifications
+@using Smbc.Risk.ReportingEngine.WebUI.Features.Notifications.Store
 @using Smbc.Risk.ReportingEngine.WebUI.Features.Themes.Store
+
 @inherits LayoutComponentBase
 
 @inject IState<AppState> AppState 
-@inject IDispatcher Dispatcher 
+@inject IDispatcher Dispatcher
+@inject IConfiguration Configuration
 
 @* Required *@
 <MudThemeProvider IsDarkMode="@AppState.Value.IsDarkMode" Theme="AppTheme.CustomTheme" />
@@ -100,6 +103,29 @@
         if (isOpen != AppState.Value.IsSidebarOpen)
         {
             Dispatcher.Dispatch(new ToggleSidebarAction());
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        ValidateDefaultParameters();
+        base.OnInitialized();
+    }
+
+    private void ValidateDefaultParameters()
+    {
+        // Make sure the initial Upload directory is provided
+        var uploadDirectory = Configuration.GetValue<string>("UPLOAD_PATH")!;
+        if (string.IsNullOrEmpty(uploadDirectory))
+        {
+            Dispatcher.Dispatch(new ShowInfoAction($"ERROR: {nameof(uploadDirectory)} missing. Please configure a Valid upload directory path!"));
+        }
+
+        // Make sure the initial report directory is provided
+        var reportDirectory = Configuration.GetValue<string>("REPORT_PATH")!;
+        if (string.IsNullOrEmpty(reportDirectory))
+        {
+            Dispatcher.Dispatch(new ShowInfoAction($"ERROR: {nameof(reportDirectory)} missing. Please configure a Valid report directory path!"));
         }
     }
 }

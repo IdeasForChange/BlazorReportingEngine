@@ -1,7 +1,7 @@
 ﻿@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
 
 @inject IDispatcher Dispatcher
-@inject ISnackbar Snackbar
+@inject IConfiguration Configuration
 
 <MudDialog>
     <TitleContent>
@@ -120,7 +120,7 @@
                                 <MudTextField T="string"
                                               @bind-Value="_model.ReportDirectory"
                                               Label="Report Directory"
-                                              Placeholder="C:\Reports\Finance"
+                                              Placeholder="@_model.ReportDirectory"
                                               Required="true"
                                               RequiredError="Report directory path is required."
                                               Variant="Variant.Outlined"
@@ -129,7 +129,6 @@
                                               AdornmentIcon="@Icons.Material.Filled.Folder"
                                               AdornmentColor="Color.Secondary" />
                             </MudItem>
-
                             <MudItem xs="12">
                                 <MudFileUpload T="IBrowserFile"
                                                OnFilesChanged="UploadFile"
@@ -137,10 +136,33 @@
                                                Accept=".xlsx, .xlst, .xls"
                                                Disabled="@string.IsNullOrWhiteSpace(_model.Name)"
                                                Required="true">
-                                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudUpload">
-                                        @(selectedFile == null ? "Upload Excel Template File" : selectedFile.Name)
-                                    </MudButton>
+                                    <CustomContent>
+                                        <MudButton Variant="Variant.Filled" 
+                                                   Color="Color.Secondary" 
+                                                   OnClick="@context.OpenFilePickerAsync"
+                                                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                                            Upload Excel Template File
+                                        </MudButton>
+                                    </CustomContent>
+                                    <SelectedTemplate>
+                                        @if (context != null && selectedFile != null)
+                                        {
+                                            <MudText Color="Color.Secondary"><code>Selected File: <strong>@selectedFile.Name</strong> - @selectedFile.Size bytes</code> </MudText>
+                                        }
+                                    </SelectedTemplate>
                                 </MudFileUpload>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField T="string"
+                                              @bind-Value="_model.DefinedNameFilters"
+                                              Label="Template Defined Filter Patterns"
+                                              Placeholder="@_model.DefinedNameFilters"
+                                              RequiredError="Defined Name Filters"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Filter"
+                                              AdornmentColor="Color.Secondary" />
                             </MudItem>
                         </MudGrid>
                     </MudStack>
@@ -183,6 +205,14 @@
     private bool _isSubmitting;
     private SaveReportMasterDto _model = new();
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _model.UploadDirectory = Configuration.GetValue<string>("UPLOAD_PATH")!;
+        _model.ReportDirectory = Configuration.GetValue<string>("REPORT_PATH")!;
+        _model.DefinedNameFilters = Configuration.GetValue<string>("DEFINED_NAME_FILTERS")!;
+    }
+
     private async Task UploadFile(InputFileChangeEventArgs e)
     {
         selectedFile = e.File;
@@ -217,6 +247,7 @@
     {
         _model = new SaveReportMasterDto();
         _isValid = false;
+        selectedFile = null;
         await _form.ResetAsync();
     }
 

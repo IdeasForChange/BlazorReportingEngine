@@ -8,7 +8,6 @@
 @inject IDispatcher Dispatcher
 @inject IJSRuntime JS
 @inject IDialogService DialogService
-@implements IAsyncDisposable
 
 <div class="d-flex justify-space-between align-center mb-0">
     <div>
@@ -143,26 +142,29 @@
 
     private const int RefreshIntervalSeconds = 30;
     private PeriodicTimer? _timer;
-    private readonly CancellationTokenSource _cts = new(); 
-    
+    private CancellationTokenSource? _cts; 
+    private Task? _timerTask;
+
     private int _secondsRemaining = RefreshIntervalSeconds;
     private double _progressValue = 100;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Dispatcher.Dispatch(new FetchReportQueueAction("Today"));
 
         // Setup Auto Refresh Timer (every 1 seconds)
+        _cts = new CancellationTokenSource();
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-        _ = RunTimerAsync();
+
+        // Track the running task
+        _timerTask = RunTimerAsync(_cts.Token);
     }
 
-    private async Task RunTimerAsync()
+    private async Task RunTimerAsync(CancellationToken cancellationToken)
     {
         try
         {
-            while (await _timer!.WaitForNextTickAsync(_cts.Token))
+            while (_timer != null && await _timer.WaitForNextTickAsync(cancellationToken))
             {
                 _secondsRemaining--;
                 _progressValue = ((double)_secondsRemaining / RefreshIntervalSeconds) * 100;
@@ -180,9 +182,9 @@
                 await InvokeAsync(StateHasChanged);
             }
         }
-        catch (OperationCanceledException)
+        catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException)
         {
-            // Graceful exit on component disposal
+            // Expected exit exceptions during navigation/disposal
         }
     }
 
@@ -215,16 +217,40 @@
         // }
     }
 
-    public async ValueTask DisposeAsync()
+    // Override FluxorComponent's async disposal hook
+    protected override async ValueTask DisposeAsyncCore(bool disposing)
     {
-        // 1. Cancel the background loop token
-        _cts.Cancel();
-        _cts.Dispose();
+        if (disposing)
+        {
+            // 1. Cancel the token to signal cancellation
+            if (_cts != null)
+            {
+                await _cts.CancelAsync();
+            }
 
-        // 2. Dispose the periodic timer
-        _timer?.Dispose();
+            // 2. Dispose the timer to wake up/terminate WaitForNextTickAsync immediately
+            _timer?.Dispose();
+            _timer = null;
 
-        await base.DisposeAsync();
-        await ValueTask.CompletedTask;
+            // 3. Gracefully await the background running task to finish
+            if (_timerTask != null)
+            {
+                try
+                {
+                    await _timerTask;
+                }
+                catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException)
+                {
+                    // Expected during teardown
+                }
+            }
+
+            // 4. Dispose CancellationTokenSource
+            _cts?.Dispose();
+            _cts = null;
+        }
+
+        // 5. Invoke the base implementation so Fluxor cleans up state subscriptions
+        await base.DisposeAsyncCore(disposing);
     }
 }

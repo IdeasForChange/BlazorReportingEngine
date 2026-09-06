@@ -14,7 +14,7 @@ public class ReportRunnerQueueWorker : BackgroundService
     private readonly ConcurrentDictionary<long, CancellationTokenSource> _runningJobs = new();
     private readonly SemaphoreSlim _semaphore;
     private readonly int _maxConcurrentJobs = 4;
-    private readonly TimeSpan _pollingInterval = TimeSpan.FromSeconds(15);
+    private readonly TimeSpan _pollingInterval = TimeSpan.FromSeconds(60);
     private readonly ILogger<ReportRunnerQueueWorker> _logger;
 
     public ReportRunnerQueueWorker(
@@ -69,8 +69,13 @@ public class ReportRunnerQueueWorker : BackgroundService
 
     private async Task DrainPendingJobsFromDatabaseAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation($"Number of slots available to run this job: {_semaphore.CurrentCount}");
         int availableSlots = _semaphore.CurrentCount;
-        if (availableSlots <= 0) return;
+        if (availableSlots <= 0)
+        {
+            _logger.LogInformation("No slots available to run this job. Trying again after sometime.");
+            return;
+        }
 
         using var scope = _scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<IReportRunnerQueueService>();
@@ -78,8 +83,10 @@ public class ReportRunnerQueueWorker : BackgroundService
         // Claim pending jobs up to available thread slots
         var pendingJobIds = await service.ClaimPendingJobIdsAsync(availableSlots, stoppingToken);
 
+        _logger.LogInformation($"Found {pendingJobIds.Count} jobs in teh queue.");
         foreach (var jobId in pendingJobIds)
         {
+            _logger.LogInformation($"Running Job Id: {jobId}");
             _ = ProcessJobWithSemaphoreAsync(jobId, stoppingToken);
         }
     }
@@ -87,7 +94,11 @@ public class ReportRunnerQueueWorker : BackgroundService
     private async Task ProcessJobWithSemaphoreAsync(long jobId, CancellationToken stoppingToken)
     {
         // Skip if already being processed by another task on this node
-        if (_runningJobs.ContainsKey(jobId)) return;
+        if (_runningJobs.ContainsKey(jobId))
+        {
+            _logger.LogInformation($"Job Id '{jobId}' is already running.");
+            return;
+        }
 
         await _semaphore.WaitAsync(stoppingToken);
 

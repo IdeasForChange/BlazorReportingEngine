@@ -5,6 +5,7 @@
 @using Smbc.Risk.ReportingEngine.Domain.Shared.Enums
 @using Smbc.Risk.ReportingEngine.WebUI.Features.DatabaseConnections.Store
 
+@inject IConfiguration Configuration
 @inject IDispatcher Dispatcher
 @inject IState<DatabaseConnectionState> ConnectionState
 
@@ -220,15 +221,41 @@
 
             <MudExpansionPanels MultiExpansion="false">
                 <MudExpansionPanel Text="Upload a new Template" Class="mb-2">
-                    <MudFileUpload T="IBrowserFile"
-                                    OnFilesChanged="UploadFile"
-                                    Class="mt-4"
-                                    Accept=".xlsx, .xlst, .xls"
-                                    Required="true">
-                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudUpload">
-                            @(selectedFile == null ? "Upload Excel Template File" : selectedFile.Name)
-                        </MudButton>
-                    </MudFileUpload>
+                    <MudItem xs="12">
+                        <MudFileUpload T="IBrowserFile"
+                                       OnFilesChanged="UploadFile"
+                                       Class="mt-4"
+                                       Accept=".xlsx, .xlst, .xls"
+                                       Disabled="@string.IsNullOrWhiteSpace(Model.Name)"
+                                       Required="true">
+                            <CustomContent>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Secondary"
+                                           OnClick="@context.OpenFilePickerAsync"
+                                           StartIcon="@Icons.Material.Filled.CloudUpload">
+                                    Upload Excel Template File
+                                </MudButton>
+                            </CustomContent>
+                            <SelectedTemplate>
+                                @if (context != null && selectedFile != null)
+                                {
+                                    <MudText Color="Color.Secondary"><code>Selected File: <strong>@selectedFile.Name</strong> - @selectedFile.Size bytes</code> </MudText>
+                                }
+                            </SelectedTemplate>
+                        </MudFileUpload>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField T="string"
+                                      @bind-Value="definedNameFilters"
+                                      Label="Template Defined Filter Patterns"
+                                      Placeholder="@definedNameFilters"
+                                      RequiredError="Defined Name Filters"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Filter"
+                                      AdornmentColor="Color.Secondary" />
+                    </MudItem>
                 </MudExpansionPanel>
             </MudExpansionPanels>
 
@@ -241,9 +268,10 @@
                         <MudCardHeader>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.subtitle1" Style="font-weight:400;">
-                                    <strong>Template Name:</strong> @(template.TemplateFileName)
-                                    <br />
-                                    <strong>Template Version:</strong> @template.TemplateVersion
+                                    <strong>Template Name (Original):</strong> @(template.OriginalFileName) <br />
+                                    <strong>Template Name (Modified):</strong> @(template.UploadedFileName) <br />
+                                    <strong>Template Version:</strong> @template.TemplateVersion <br />
+                                    <strong>Template Filters:</strong> @template.DefinedNameFilters
                                 </MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
@@ -317,13 +345,14 @@
     private bool _isValid;
     private Dictionary<string, StandaloneCodeEditor> _editorMap = new();
     private IBrowserFile? selectedFile;
+    private string? definedNameFilters;
 
     protected override void OnInitialized()
     {
+        definedNameFilters = Configuration.GetValue<string>("DEFINED_NAME_FILTERS")!;
         Dispatcher.Dispatch(new FetchDatabaseConnectionAction());
         base.OnInitialized();
     }
-
 
     private class MetricPreviewState
     {
@@ -399,7 +428,9 @@
         template = new ReportTemplateDto
         {
             Id = temporaryTemplateId,
-            TemplateFileName = selectedFile.Name,
+            OriginalFileName = selectedFile.Name,
+            UploadedFileName = selectedFile.Name,
+            DefinedNameFilters = definedNameFilters,
             FileBytes = memoryStream.ToArray(),
             FileName = selectedFile.Name,
         };

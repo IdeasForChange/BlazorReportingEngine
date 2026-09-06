@@ -1,7 +1,10 @@
 ﻿@page "/"
+@using Smbc.Risk.ReportingEngine.WebUI.Features.Notifications.Store
 
 @inherits FluxorComponent
 @inject ISnackbar Snackbar
+@inject IDispatcher Dispatcher
+@inject IConfiguration Configuration
 
 <PageHeader PageTitle="Dashboard" 
             PageSubTitle="A database driven reporting engine written." />

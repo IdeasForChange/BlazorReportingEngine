@@ -1,4 +1,6 @@
 using Asp.Versioning;
+using Serilog;
+using Serilog.Events;
 using Smbc.Risk.ReportingEngine.Application;
 using Smbc.Risk.ReportingEngine.Infrastructure;
 using Smbc.Risk.ReportingEngine.Infrastructure.BackgroundServices;
@@ -9,6 +11,14 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        // Configure Serilog
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MMM-dd HH:mm:ss.fff}] [{Level}] {Message}{NewLine}{Exception}")
+            .CreateLogger();
+
         var builder = WebApplication.CreateBuilder(args);
 
         // Add Services to container

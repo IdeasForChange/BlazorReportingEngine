@@ -14,9 +14,10 @@ public class ReportTemplateConfiguration : IEntityTypeConfiguration<ReportTempla
         builder.HasKey(e => e.Id);
 
         builder.Property(e => e.ReportMasterId).IsRequired();
-        builder.Property(e => e.TemplateFileName).HasMaxLength(1000).IsRequired();
+        builder.Property(e => e.OriginalFileName).HasMaxLength(1000).IsRequired();
         builder.Property(e => e.TemplatePath).HasMaxLength(1000).IsRequired();
         builder.Property(e => e.TemplateVersion).HasDefaultValue(1).IsRequired();
+        builder.Property(e => e.DefinedNameFilters).IsRequired().HasMaxLength(1000);
 
         // Common Table Items
         builder.Property(e => e.EntityVersion).HasDefaultValue(1).IsRequired();
