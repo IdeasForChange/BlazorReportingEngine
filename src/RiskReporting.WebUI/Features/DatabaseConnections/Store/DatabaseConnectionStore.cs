@@ -52,7 +52,6 @@ public class DatabaseConnectionEffects(
             var connections = await httpClient.GetFromJsonAsync<List<DatabaseConnectionDto>>(apiEndpoint) ?? [];
 
             dispatcher.Dispatch(new FetchDatabaseConnectionSuccessAction(connections));
-            dispatcher.Dispatch(new ShowInfoAction($"Connections Loaded Successfuly.", "Database Connection"));
 
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -75,7 +74,7 @@ public class DatabaseConnectionEffects(
             if (action.Connection.Id == null)
             {
                 await httpClient.PostAsJsonAsync(apiEndpoint, action.Connection);
-                snackbar.Add($"Database Connection '{action.Connection.ConnectionName}' saved successfully.", Severity.Success);
+                dispatcher.Dispatch(new ShowInfoAction($"Database Connection '{action.Connection.ConnectionName}' saved successfully.", "Database Connection Added"));
             }
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
