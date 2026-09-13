@@ -8,7 +8,10 @@ public class ReportMappingProfile : Profile
 {
     public ReportMappingProfile()
     {
-        CreateMap<ReportMaster, ReportMasterDto>().ReverseMap();
+        CreateMap<ReportMaster, ReportMasterDto>()
+            .ForMember(dest => dest.QueryType, opt => opt.Ignore())
+            .ForMember(dest => dest.DefinedNameFilters, opt => opt.Ignore())
+            .ReverseMap();
         CreateMap<ReportParameter, ReportParameterDto>().ReverseMap();
         CreateMap<ReportMetric, ReportMetricDto>().ReverseMap();
         CreateMap<ReportTemplate, ReportTemplateDto>()

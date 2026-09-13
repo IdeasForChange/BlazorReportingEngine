@@ -1,7 +1,11 @@
-﻿@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+﻿@using System.Data
+@using Smbc.Risk.ReportingEngine.Domain.Shared.DataTransferObjects
+@using Smbc.Risk.ReportingEngine.Domain.Shared.Enums
+@using Smbc.Risk.ReportingEngine.WebUI.Features.DatabaseConnections.Store
 
 @inject IDispatcher Dispatcher
 @inject IConfiguration Configuration
+@inject IState<DatabaseConnectionState> ConnectionState
 
 <MudDialog>
     <TitleContent>
@@ -152,18 +156,63 @@
                                     </SelectedTemplate>
                                 </MudFileUpload>
                             </MudItem>
+                            
                             <MudItem xs="12">
-                                <MudTextField T="string"
-                                              @bind-Value="_model.DefinedNameFilters"
-                                              Label="Template Defined Filter Patterns"
-                                              Placeholder="@_model.DefinedNameFilters"
-                                              RequiredError="Defined Name Filters"
-                                              Variant="Variant.Outlined"
-                                              Margin="Margin.Dense"
-                                              Adornment="Adornment.Start"
-                                              AdornmentIcon="@Icons.Material.Filled.Filter"
-                                              AdornmentColor="Color.Secondary" />
+                                <MudRadioGroup T="SpreadsheetQueryType"
+                                               @bind-Value="_model.QueryType">
+                                    <MudRadio Value="SpreadsheetQueryType.QueryInCell" Color="Color.Primary">Query In Cell</MudRadio>
+                                    <MudRadio Value="SpreadsheetQueryType.QueryInDefinedName" Color="Color.Primary">Query In Defined Name</MudRadio>
+                                </MudRadioGroup>
                             </MudItem>
+                            
+                            @if ( _model.QueryType == SpreadsheetQueryType.QueryInDefinedName)
+                            {
+                                <MudItem xs="12">
+                                    <MudTextField T="string"
+                                                  @bind-Value="_model.DefinedNameFilters"
+                                                  Label="Template Defined Filter Patterns"
+                                                  Placeholder="@_model.DefinedNameFilters"
+                                                  RequiredError="Defined Name Filters"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Adornment="Adornment.Start"
+                                                  AdornmentIcon="@Icons.Material.Filled.Filter"
+                                                  AdornmentColor="Color.Secondary" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Icon="@Icons.Material.Filled.Info">
+                                        <MudStack Spacing="0">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Defined Name Query Info</MudText>
+                                            <MudText Typo="Typo.body2">
+                                                When using the "Query In Defined Name" option, the system will look for defined names in the Excel template that match the specified filter patterns.
+                                                Ensure that your template contains defined names that correspond to your data queries.
+                                            </MudText>
+                                        </MudStack>
+                                    </MudAlert>
+                                </MudItem>
+                            }
+                            else
+                            {
+                                <MudItem xs="12" sm="10">
+                                    <MudSelect T="long?" @bind-Value="_model.DatabaseConnectionId" Label="Target DB" Variant="Variant.Outlined" Margin="Margin.Dense">
+                                        @foreach (var connection in ConnectionState.Value.Connections)
+                                        {
+                                            <MudSelectItem Value="@connection.Id">@($"[{connection.Environment}] [{connection.DatabaseType}] {connection.ConnectionName}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem> 
+                                <MudItem xs="12">
+                                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Icon="@Icons.Material.Filled.Info">
+                                        <MudStack Spacing="0">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Database Connection</MudText>
+                                            <MudText Typo="Typo.body2">
+                                                When using the "Query In Cell" option, the system will look for SQL Queries in Cell in the Excel template.
+                                                Ensure that your template's contains valid SQL that correspond to your data queries.
+                                            </MudText>
+                                        </MudStack>
+                                    </MudAlert>
+                                </MudItem>
+                            }
                         </MudGrid>
                     </MudStack>
                 </MudPaper>

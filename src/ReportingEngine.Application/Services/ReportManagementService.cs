@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using DocumentFormat.OpenXml.Office2016.Drawing.Charts;
 using Microsoft.Extensions.Logging;
 using Smbc.Risk.Core.Application.Services;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
@@ -43,22 +42,10 @@ public class ReportManagementService(
 
         var modifiedFileName = $"{Guid.NewGuid()}_{dto.FileName}";
         var filePath = Path.Combine(uploadDir, modifiedFileName);
-        await File.WriteAllBytesAsync(filePath, dto.FileBytes);
+        await File.WriteAllBytesAsync(filePath, dto.FileBytes, cancellationToken);
 
         // 2. Parse Named Ranges from Excel
-        using var stream = new MemoryStream(dto.FileBytes);
-        var namedRanges = _excelParserService.ExtractNamedRanges(stream);
-
-        var filteredRanges = new List<string>();
-        if (namedRanges.Count > 0 && !string.IsNullOrWhiteSpace(dto.DefinedNameFilters))
-        {
-            var filters = dto.DefinedNameFilters.Replace("*", string.Empty).Split([',']);
-            foreach (var filter in filters)
-            {
-                // Add the filtered items if it matches the criteria specified.
-                filteredRanges.AddRange(namedRanges.Where(p => p.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList());
-            }
-        }
+        var filteredRanges = dto.QueryType == SpreadsheetQueryType.QueryInDefinedName ? await GetDefinedNames(dto) : [];
 
         // 3. Construct Entity & Metrics
         var report = new ReportMaster
@@ -69,13 +56,15 @@ public class ReportManagementService(
             ReportNamePattern = dto.ReportNamePattern,
             ReportTemplates =
             [
-                new()
+                new ReportTemplate
                 {
                     OriginalFileName = dto.FileName,
                     UploadedFileName = modifiedFileName,
                     TemplatePath = uploadDir,
                     TemplateVersion = 1,
-                    DefinedNameFilters = string.Join(",", filteredRanges),
+                    QueryType = dto.QueryType,
+                    DatabaseConnectionId = dto.DatabaseConnectionId,
+                    DefinedNameFilters = dto.DefinedNameFilters,
                     ReportMetrics = [.. filteredRanges.Select(nr => new ReportMetric
                     {
                         NamedRange = nr
@@ -84,6 +73,7 @@ public class ReportManagementService(
             ]
         };
 
+        // 4. Add Template to the database
         await _reportMasterRepository.CreateAsync(report, cancellationToken);
         return _mapper.Map<ReportMasterDto>(report);
     }
@@ -146,5 +136,24 @@ public class ReportManagementService(
             item.ErrorMessage = "Cancelled from UI";
             await _reportRunnerQueueRepository.UpdateAsync(item);
         }
+    }
+
+    private async Task<List<string>> GetDefinedNames(SaveReportMasterDto dto)
+    {
+        using var stream = new MemoryStream(dto.FileBytes);
+        var namedRanges = _excelParserService.ExtractNamedRanges(stream);
+
+        var filteredRanges = new List<string>();
+        if (namedRanges.Count > 0 && !string.IsNullOrWhiteSpace(dto.DefinedNameFilters))
+        {
+            var filters = dto.DefinedNameFilters.Replace("*", string.Empty).Split([',']);
+            foreach (var filter in filters)
+            {
+                // Add the filtered items if it matches the criteria specified.
+                filteredRanges.AddRange(namedRanges.Where(p => p.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList());
+            }
+        }
+
+        return filteredRanges;
     }
 }

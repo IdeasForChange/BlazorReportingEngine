@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
+using Smbc.Risk.ReportingEngine.Domain.Shared.Enums;
 
 namespace Smbc.Risk.ReportingEngine.Infrastructure.Data.EntityFramework.Configurations;
 
@@ -17,6 +18,8 @@ public class ReportTemplateConfiguration : IEntityTypeConfiguration<ReportTempla
         builder.Property(e => e.OriginalFileName).HasMaxLength(1000).IsRequired();
         builder.Property(e => e.TemplatePath).HasMaxLength(1000).IsRequired();
         builder.Property(e => e.TemplateVersion).HasDefaultValue(1).IsRequired();
+        builder.Property(e => e.QueryType).HasDefaultValue(SpreadsheetQueryType.QueryInCell).IsRequired();
+        builder.Property(e => e.DatabaseConnectionId).IsRequired(false);
         builder.Property(e => e.DefinedNameFilters).IsRequired().HasMaxLength(1000);
 
         // Common Table Items
@@ -32,6 +35,7 @@ public class ReportTemplateConfiguration : IEntityTypeConfiguration<ReportTempla
 
         // Foreign Key Index
         builder.HasIndex(e => e.ReportMasterId);
+        builder.HasIndex(e => e.DatabaseConnectionId);
 
         // Relationships
         builder.HasMany(e => e.ReportMetrics)

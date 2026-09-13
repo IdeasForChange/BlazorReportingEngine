@@ -1,8 +1,6 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using NodaTime.Text;
 using Smbc.Risk.Core.Application.Services;
 using Smbc.Risk.ReportingEngine.Application.Interfaces;
 using Smbc.Risk.ReportingEngine.Domain.Entities;
@@ -66,6 +64,7 @@ public class ReportRunnerQueueService(
 
             var reportMaster = await reportMasterRepository.GetByIdAsync(job.ReportMasterId, cancellationToken) ?? throw new InvalidOperationException("Report master configuration not found.");
             var activeTemplate = reportMaster.ReportTemplates.FirstOrDefault(t => t.IsActive) ?? throw new InvalidOperationException("No active template found for report.");
+
             cancellationToken.ThrowIfCancellationRequested();
 
             // Prepare Paths
@@ -96,61 +95,14 @@ public class ReportRunnerQueueService(
             // Open Excel via ClosedXML
             using (var workbook = new XLWorkbook(generatedTempPath))
             {
-                // Get all the Workbook DefinedNames
-                var definedNames = workbook.DefinedNames.ToList();
-
-                // Also add all the worksheet name range
-                definedNames.AddRange(workbook.Worksheets.SelectMany(ws => ws.DefinedNames).ToList());
-
-                int totalMetrics = activeTemplate.ReportMetrics.Count;
-                int processedMetrics = 0;
-
-                foreach (var metric in activeTemplate.ReportMetrics.Where(m => m.IsActive))
+                if (activeTemplate.QueryType == SpreadsheetQueryType.QueryInDefinedName)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    if(metric.DatabaseConnectionId is null)
-                    {
-                        logger.LogWarning($"Metric SQL for {metric.NamedRange} is ignored as NO database connection is specified.");
-                        continue;
-                    }
-
-                    // Replace Parameter placeholders (@ParamName) in SQL
-                    string finalSql = metric.SqlQuery;
-                    foreach (var param in parameters)
-                    {
-                        finalSql = finalSql.Replace($"@{param.Key}", param.Value.Replace("'", "''"));
-                    }
-
-                    logger.LogInformation($"Executing SQL: {finalSql}, Max Rows: {metric.MaxRows} against Database Connection: {metric.DatabaseConnectionId}.");
-
-                    // Execute Dynamic Query via EF Connection / DbConnection
-                    var dataTable = await dynamicQueryExecutor.ExecuteQueryAsync(metric.DatabaseConnectionId, finalSql, metric.MaxRows, cancellationToken);
-
-                    var namedRange = definedNames.Where(p => p.Name.Equals(metric.NamedRange)).FirstOrDefault();
-                    if (namedRange != null)
-                    {
-                        // 1. Locate the named range or target cell (e.g., Cell A2)
-                        var targetCell = namedRange.Ranges.First().FirstCell();
-                        int rowCount = dataTable.Rows.Count;
-
-                        // 2. Is the number of result is one, just INSERT the data in the cell
-                        if (rowCount > 1)
-                        {
-                            targetCell.WorksheetRow().InsertRowsBelow(rowCount);
-                        }
-
-                        // 3. Populate data into the newly created space
-                        targetCell.InsertData(dataTable);
-
-                        logger.LogInformation($"INSERTED: {rowCount} number of rows in the spreadsheet for named range: {metric.NamedRange}.");
-                    }
-
-                    processedMetrics++;
-                    int currentProgress = 30 + (int)((processedMetrics / (double)totalMetrics) * 60);
-                    await repository.UpdateJobStatusAsync(jobId, status: QueueStatus.Processing, progress: currentProgress, cancellationToken: cancellationToken);
+                    await ProcessDefinedName(jobId, workbook, activeTemplate, parameters, cancellationToken);
                 }
-
+                else
+                {
+                    await ProcessCellQuery(jobId, workbook, parameters, cancellationToken);
+                }
                 workbook.Save();
             }
 
@@ -195,33 +147,105 @@ public class ReportRunnerQueueService(
             .Replace("{Quarter}", $"Q{(now.Month - 1) / 3 + 1}");
     }
 
+    private async Task ProcessDefinedName(long jobId, XLWorkbook workbook, ReportTemplate activeTemplate, Dictionary<string, string>? parameters, CancellationToken cancellationToken)
+    {
+        // Get all the Workbook DefinedNames
+        var definedNames = workbook.DefinedNames.ToList();
 
-    //private async Task<DataTable> ExecuteMetricQueryAsync(long? connectionId, string sql, int? maxRows, CancellationToken cancellationToken)
-    //{
-    //    DataTable dt = new DataTable();
-    //    string connectionString = _configuration.GetConnectionString("DefaultConnection")!;
+        // Also add all the worksheet name range
+        definedNames.AddRange(workbook.Worksheets.SelectMany(ws => ws.DefinedNames).ToList());
 
-    //    if (connectionId.HasValue)
-    //    {
-    //        var dbConn = await _repository.GetDatabaseConnectionAsync(connectionId.Value, cancellationToken);
-    //        if (dbConn != null)
-    //        {
-    //            connectionString = $"Server={dbConn.ServerHost},{dbConn.Port};Database={dbConn.DatabaseName};User Id={dbConn.UserId};Password={dbConn.Password};Timeout={dbConn.TimeoutSeconds};TrustServerCertificate=True;";
-    //        }
-    //    }
+        var totalMetrics = activeTemplate.ReportMetrics.Count;
+        var processedMetrics = 0;
 
-    //    using (var conn = new Microsoft.Data.SqlClient.SqlConnection(connectionString))
-    //    {
-    //        await conn.OpenAsync(cancellationToken);
-    //        using (var cmd = conn.CreateCommand())
-    //        {
-    //            cmd.CommandText = maxRows.HasValue ? $"SELECT TOP ({maxRows.Value}) * FROM ({sql}) AS MetricSubQuery" : sql;
-    //            using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
-    //            {
-    //                dt.Load(reader);
-    //            }
-    //        }
-    //    }
-    //    return dt;
-    //}
+        foreach (var metric in activeTemplate.ReportMetrics.Where(m => m.IsActive))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (metric.DatabaseConnectionId is null)
+            {
+                logger.LogWarning($"Metric SQL for {metric.NamedRange} is ignored as NO database connection is specified.");
+                continue;
+            }
+
+            // Replace Parameter placeholders (@ParamName) in SQL
+            var finalSql = parameters?.Aggregate(metric.SqlQuery, (current, param) => current.Replace($"@{param.Key}", param.Value.Replace("'", "''")));
+
+            logger.LogInformation($"Executing SQL: {finalSql}, Max Rows: {metric.MaxRows} against Database Connection: {metric.DatabaseConnectionId}.");
+            if (string.IsNullOrEmpty(finalSql))
+            {
+                continue;
+            }
+
+            // Execute Dynamic Query via EF Connection / DbConnection
+            var dataTable = await dynamicQueryExecutor.ExecuteQueryAsync(metric.DatabaseConnectionId, finalSql, metric.MaxRows, cancellationToken);
+
+            var namedRange = definedNames?.Where(p => p.Name.Equals(metric.NamedRange)).FirstOrDefault();
+            if (namedRange != null)
+            {
+                // 1. Locate the named range or target cell (e.g., Cell A2)
+                var targetCell = namedRange.Ranges.First().FirstCell();
+                var rowCount = dataTable.Rows.Count;
+
+                // 2. Is the number of result is one, just INSERT the data in the cell
+                if (rowCount > 1)
+                {
+                    targetCell.WorksheetRow().InsertRowsBelow(rowCount);
+                }
+
+                // 3. Populate data into the newly created space
+                targetCell.InsertData(dataTable);
+
+                logger.LogInformation($"INSERTED: {rowCount} number of rows in the spreadsheet for named range: {metric.NamedRange}.");
+            }
+
+            processedMetrics++;
+            var currentProgress = 30 + (int)((processedMetrics / (double)totalMetrics) * 60);
+            await repository.UpdateJobStatusAsync(jobId, status: QueueStatus.Processing, progress: currentProgress, cancellationToken: cancellationToken);
+        }
+    }
+
+    private async Task ProcessCellQuery(long jobId, XLWorkbook workbook, Dictionary<string, string>? parameters, CancellationToken cancellationToken)
+    {
+        var totalMetrics = workbook.Worksheets.Count *
+                           workbook.Worksheets.SelectMany(p => p.CellsUsed(cell => !cell.HasFormula &&
+            !cell.IsEmpty())).Count();
+        var processedMetrics = 0;
+
+        foreach (var worksheet in workbook.Worksheets)
+        {
+            // Find all used cells that do not contain formulas and are not empty
+            var populatedDataCells = worksheet.CellsUsed(cell =>
+                !cell.HasFormula &&
+                !cell.IsEmpty()
+            );
+
+            foreach (var targetCell in populatedDataCells)
+            {
+                var cellSqlQuery = targetCell.GetValue<string>();
+
+                // Process your cell...
+                // Replace Parameter placeholders (@ParamName) in SQL
+                var finalSql = parameters?.Aggregate(cellSqlQuery, (current, param) => current.Replace($"@{param.Key}", param.Value.Replace("'", "''")));
+
+                logger.LogInformation($"Executing SQL: {finalSql}, Max Rows: {1} against Database Connection: .");
+                if (string.IsNullOrEmpty(finalSql))
+                {
+                    continue;
+                }
+
+                // Execute Dynamic Query via EF Connection / DbConnection
+                var dataTable = await dynamicQueryExecutor.ExecuteQueryAsync(1, finalSql, 1, cancellationToken);
+
+                // 3. Populate data into the newly created space
+                targetCell.InsertData(dataTable);
+
+                logger.LogInformation($"INSERTED: {dataTable.Rows.Count} number of rows in the spreadsheet for Cell: {targetCell.Address.ColumnLetter}{targetCell.Address.RowNumber}.");
+            }
+
+            processedMetrics++;
+            var currentProgress = 30 + (int)((processedMetrics / (double)totalMetrics) * 60);
+            await repository.UpdateJobStatusAsync(jobId, status: QueueStatus.Processing, progress: currentProgress, cancellationToken: cancellationToken);
+        }
+    }
 }

@@ -6,7 +6,7 @@ public abstract class EntityBase
     public int EntityVersion { get; set; } = 1;
     public DateTime EntityWrittenAt { get; set; } = DateTime.UtcNow;
 
-    // Audting Fields 
+    // Auditing Fields 
     public bool IsActive { get; set; } = true;
     public string? CreatedBy { get; set; } = "System";
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;

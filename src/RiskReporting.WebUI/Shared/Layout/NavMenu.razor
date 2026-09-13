@@ -1,12 +1,41 @@
-﻿<MudNavMenu Rounded="true" Margin="Margin.Normal" Color="Color.Success">
+﻿@using Smbc.Risk.ReportingEngine.WebUI.Features.DatabaseConnections.Store
+@using Smbc.Risk.ReportingEngine.WebUI.Features.ReportMasters.Store
+
+@inherits FluxorComponent
+
+@inject IState<DatabaseConnectionState> ConnectionState
+@inject IState<ReportMasterState> ReportMasterState
+@inject IDispatcher Dispatcher
+
+<MudNavMenu Rounded="true" Margin="Margin.Normal" Color="Color.Success">
     <MudList T="int" Class="pa-0 ma-0">
         <MudNavLink Class="pb-0 ma-0" Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
         <MudListSubheader Class="pb-0 ma-0">Applications</MudListSubheader>
-        <MudNavLink Href="report-queues" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CloudQueue">Report Queues</MudNavLink>
+        
+        <MudTooltip Text="@(ConnectionState.Value.Connections.Count > 0 ? "" : "Database connection required")" Placement="Placement.Right">
+            <MudNavLink Href="report-queues" Disabled="IsReportQueueDisabled" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CloudQueue">Report Queues</MudNavLink>
+        </MudTooltip>
+        
         <MudListSubheader Class="pb-0 ma-0">Manage</MudListSubheader>
-        <MudNavLink Class="pb-0 ma-0" Href="report-management" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Report">Report Templates</MudNavLink>
+        
+        <MudTooltip Text="@(ConnectionState.Value.Connections.Count > 0 ? "" : "Database connection required")" Placement="Placement.Right">
+            <MudNavLink Class="pb-0 ma-0" Disabled="!IsReportManagementEnabled" Href="report-management" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Report">Report Templates</MudNavLink>
+        </MudTooltip>
+        
         <MudNavLink Class="pb-0 ma-0" Href="database-connections" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Dataset">Database Connections</MudNavLink>
         <MudDivider />
         <MudNavLink Class="pt-2 pb-0 ma-0" Href="help" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Help">Help</MudNavLink>
     </MudList>
 </MudNavMenu>
+
+@code
+{
+    private bool IsReportQueueDisabled => ConnectionState.Value.Connections.Count <= 0 || ReportMasterState.Value.Reports.Count <= 0;
+    private bool IsReportManagementEnabled => ConnectionState.Value.Connections.Count > 0;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Dispatcher.Dispatch(new FetchDatabaseConnectionAction());
+    }
+}

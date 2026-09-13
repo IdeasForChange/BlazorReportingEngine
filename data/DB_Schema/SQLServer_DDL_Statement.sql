@@ -82,6 +82,8 @@ CREATE TABLE [Reporting].[ReportTemplate] (
     [UploadedFileName] NVARCHAR(1000) NOT NULL,
     [TemplatePath] NVARCHAR(1000) NOT NULL,
     [TemplateVersion] INT NOT NULL DEFAULT 1,
+    [QueryType] INT NOT NULL DEFAULT 1,
+	[DatabaseConnectionId] BIGINT NULL,
     [DefinedNameFilters] NVARCHAR(1000) NOT NULL,
     [IsActive] BIT NOT NULL DEFAULT 1,
     [CreatedBy] NVARCHAR(256) NULL,
@@ -90,7 +92,9 @@ CREATE TABLE [Reporting].[ReportTemplate] (
     [UpdatedAtUtc] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     CONSTRAINT [PK_ReportTemplate] PRIMARY KEY CLUSTERED ([Id] ASC),
     CONSTRAINT [FK_ReportTemplate_ReportMaster] FOREIGN KEY ([ReportMasterId]) 
-        REFERENCES [Reporting].[ReportMaster] ([Id]) ON DELETE CASCADE
+        REFERENCES [Reporting].[ReportMaster] ([Id]) ON DELETE CASCADE,
+    CONSTRAINT [FK_ReportTemplate_DatabaseConnectionId] FOREIGN KEY ([DatabaseConnectionId]) 
+        REFERENCES [Reporting].[DatabaseConnection] ([Id]) 
 );
 
 CREATE TABLE [Reporting].[ReportMetric] (

@@ -6,14 +6,14 @@ namespace Smbc.Risk.ReportingEngine.WebUI.Features.ReportMasters.Store;
 
 // Represents the state of the Report Master feature
 [FeatureState]
-public record ReportMasterState(bool IsLoading, IEnumerable<ReportMasterDto> Reports, string? ErrorMessage)
+public record ReportMasterState(bool IsLoading, List<ReportMasterDto> Reports, string? ErrorMessage)
 {
     public ReportMasterState() : this(false, [], null) { }
 }
 
 // Actions for loading reports
 public record FetchReportMasterAction(bool IncludeInactive = false);
-public record FetchReportMasterSuccessAction(IEnumerable<ReportMasterDto> Reports);
+public record FetchReportMasterSuccessAction(List<ReportMasterDto> Reports);
 
 public record SaveReportMasterAction(SaveReportMasterDto ReportMaster);
 public record UpdateReportMasterAction(ReportMasterDto ReportMaster);
@@ -47,7 +47,7 @@ public class ReportMasterEffects(HttpClient httpClient, IConfiguration configura
     {
         try
         {
-            var reports = await _httpClient.GetFromJsonAsync<IEnumerable<ReportMasterDto>>(apiEndpoint);
+            var reports = await _httpClient.GetFromJsonAsync<List<ReportMasterDto>>(apiEndpoint);
             dispatcher.Dispatch(new FetchReportMasterSuccessAction(reports ?? []));
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
