@@ -23,19 +23,20 @@
     </TitleContent>
 
     <DialogContent>
-        <MudCard Class="pa-2" Elevation="0">
-            <MudForm @ref="_form" @bind-IsValid="_isValid">
-                <MudSelect T="long" 
-                           Label="Select Job"
-                           Placeholder="-- Select a Job to run --"
-                           ValueChanged="OnJobSelected" 
-                           Variant="Variant.Outlined"
-                           Margin="Margin.Dense"
-                           Required="true"
-                           Clearable="true">
+        <MudForm @ref="_form" @bind-IsValid="_isValid">            
+            <MudStack Spacing="0">
+                <MudSelect T="long?"
+                            Label="Select a report to run"
+                            ValueChanged="OnJobSelected" 
+                            Variant="Variant.Outlined"
+                            Margin="Margin.Dense"
+                            Required="true"
+                            FullWidth="true" 
+                            FitContent="true" 
+                            Clearable="true">
                     @foreach (var job in ReportMasterState.Value.Reports)
                     {
-                        <MudSelectItem Value="@job.Id">@job.Name</MudSelectItem>
+                        <MudSelectItem T="long?" Value="@((long?)job.Id)">@job.Name</MudSelectItem>
                     }
                 </MudSelect>
 
@@ -49,35 +50,34 @@
                                 case ParameterType.String: 
                                     // String
                                     <MudTextField T="string" 
-                                                  Label="@param.Name" Required="@param.IsRequired"
-                                                  Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  ValueChanged="@(val => _paramValues[param.Name] = val)" />
+                                                    Label="@param.Name" Required="@param.IsRequired"
+                                                    Variant="Variant.Outlined"
+                                                    Margin="Margin.Dense"
+                                                    ValueChanged="@(val => _paramValues[param.Name] = val)" />
                                     break;
                                 case ParameterType.DateTime: 
                                     // DateTime
                                     <MudDatePicker Label="@param.Name"
-                                                   Variant="Variant.Outlined"
-                                                   Margin="Margin.Dense"
-                                                   Required="@param.IsRequired"
-                                                   DateChanged="@(date => _paramValues[param.Name] = date?.ToString("yyyy-MM-dd") ?? "")" />
+                                                    Variant="Variant.Outlined"
+                                                    Margin="Margin.Dense"
+                                                    Required="@param.IsRequired"
+                                                    DateChanged="@(date => _paramValues[param.Name] = date?.ToString("yyyy-MM-dd") ?? "")" />
                                     break;
                                 case ParameterType.Integer: 
                                     // Integer
                                     <MudNumericField T="int"
-                                                     Variant="Variant.Outlined"
-                                                     Margin="Margin.Dense"
-                                                     Label="@param.Name"
-                                                     Required="@param.IsRequired"
-                                                     ValueChanged="@(val => _paramValues[param.Name] = val.ToString())" />
+                                                        Variant="Variant.Outlined"
+                                                        Margin="Margin.Dense"
+                                                        Label="@param.Name"
+                                                        Required="@param.IsRequired"
+                                                        ValueChanged="@(val => _paramValues[param.Name] = val.ToString())" />
                                     break;
                             }
                         </div>
                     }
                 }
-            </MudForm>
-        </MudCard>
-
+            </MudStack>
+        </MudForm>
     </DialogContent>
 
     <DialogActions>
@@ -111,12 +111,11 @@
     {
         Dispatcher.Dispatch(new FetchReportMasterAction(false));
         await base.OnInitializedAsync();
-        // _jobs = (await Repo.GetActiveReportMastersAsync()).ToList();
     }
 
-    private async Task OnJobSelected(long selectedJobId)
+    private async Task OnJobSelected(long? selectedJobId)
     {
-        if(selectedJobId > 0)
+        if (selectedJobId != null && selectedJobId > 0)
         {
             _selectedJob = ReportMasterState.Value.Reports?.Where(p => p.Id == selectedJobId).FirstOrDefault();
             if (_selectedJob != null)
@@ -156,5 +155,6 @@
 
             Dispatcher.Dispatch(new RunReportAction(reportRequest));
         }
+        MudDialog.Cancel();
     }
 }

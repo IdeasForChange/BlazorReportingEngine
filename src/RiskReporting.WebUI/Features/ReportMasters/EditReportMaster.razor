@@ -236,10 +236,34 @@
                             </SelectedTemplate>
                         </MudFileUpload>
                     </MudItem>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
 
+            <MudCard Class="mb-2 rounded-lg" Outlined="true" Elevation="0">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.subtitle1" Style="font-weight:200;">
+                            <strong>Name (Original):</strong> @(_latestTemplate.OriginalFileName) <br />
+                            <strong>Name (Modified):</strong> @(_latestTemplate.UploadedFileName) <br />
+                            <strong>Version:</strong> @_latestTemplate.TemplateVersion <br />
+                            <strong>Filters:</strong> @_latestTemplate.QueryType <br />
+                            @if (_latestTemplate.QueryType == SpreadsheetQueryType.QueryInCell)
+                            {
+                                <strong>Filters:</strong> @_latestTemplate.DefinedNameFilters
+                            }
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                        Color="Color.Error" Size="Size.Large" 
+                                        Variant="Variant.Filled" 
+                                        OnClick="() => Model.ReportTemplates.Remove(_latestTemplate)" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
                     <MudItem xs="12">
                         <MudRadioGroup T="SpreadsheetQueryType"
-                                       @bind-Value="Model.QueryType">
+                                        @bind-Value="Model.QueryType">
                             <MudRadio Value="SpreadsheetQueryType.QueryInCell" Color="Color.Primary">Query In Cell</MudRadio>
                             <MudRadio Value="SpreadsheetQueryType.QueryInDefinedName" Color="Color.Primary">Query In Defined Name</MudRadio>
                         </MudRadioGroup>
@@ -249,15 +273,15 @@
                     {
                         <MudItem xs="12">
                             <MudTextField T="string"
-                                          @bind-Value="Model.DefinedNameFilters"
-                                          Label="Template Defined Filter Patterns"
-                                          Placeholder="@Model.DefinedNameFilters"
-                                          RequiredError="Defined Name Filters"
-                                          Variant="Variant.Outlined"
-                                          Margin="Margin.Dense"
-                                          Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Filter"
-                                          AdornmentColor="Color.Secondary" />
+                                            @bind-Value="Model.DefinedNameFilters"
+                                            Label="Template Defined Filter Patterns"
+                                            Placeholder="@Model.DefinedNameFilters"
+                                            RequiredError="Defined Name Filters"
+                                            Variant="Variant.Outlined"
+                                            Margin="Margin.Dense"
+                                            Adornment="Adornment.Start"
+                                            AdornmentIcon="@Icons.Material.Filled.Filter"
+                                            AdornmentColor="Color.Secondary" />
                         </MudItem>
                         <MudItem xs="12">
                             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Icon="@Icons.Material.Filled.Info">
@@ -293,38 +317,11 @@
                             </MudAlert>
                         </MudItem>
                     }
-                </MudExpansionPanel>
-            </MudExpansionPanels>
-
-            @if (Model.ReportTemplates.Count > 0 && Model.ReportTemplates.Any())
-            {
-                @if (_latestTemplate != null)
-                {
-                    <MudCard Class="mb-2 rounded-lg" Outlined="true" Elevation="0">
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.subtitle1" Style="font-weight:200;">
-                                    <strong>Name (Original):</strong> @(_latestTemplate.OriginalFileName) <br />
-                                    <strong>Name (Modified):</strong> @(_latestTemplate.UploadedFileName) <br />
-                                    <strong>Version:</strong> @_latestTemplate.TemplateVersion <br />
-                                    <strong>Filters:</strong> @_latestTemplate.QueryType <br />
-                                    @if (_latestTemplate.QueryType == SpreadsheetQueryType.QueryInCell)
-                                    {
-                                        <strong>Filters:</strong> @_latestTemplate.DefinedNameFilters
-                                    }
-                                </MudText>
-                            </CardHeaderContent>
-                            <CardHeaderActions>
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                               Color="Color.Error" Size="Size.Large" 
-                                               Variant="Variant.Filled" 
-                                               OnClick="() => Model.ReportTemplates.Remove(_latestTemplate)" />
-                            </CardHeaderActions>
-                        </MudCardHeader>
-
-                        @if (_latestTemplate.ReportMetrics.Count > 0)
+                    @if (Model.ReportTemplates.Count > 0 && Model.ReportTemplates.Any())
+                    {
+                        @if (_latestTemplate != null && _latestTemplate.ReportMetrics.Count > 0)
                         {
-                            <MudCardContent>
+
                                 <MudText Typo="Typo.h6" Color="Color.Primary">Query Metrics</MudText>
                                 <MudExpansionPanels MultiExpansion="false">
 
@@ -347,8 +344,8 @@
                                                     <MudItem xs="12">
                                                         <div class="sql-editor-wrapper">
                                                             <StandaloneCodeEditor @ref="_editorMap[metric.NamedRange]"
-                                                                                  ConstructionOptions="(e) => GetMonacoOptions(e, metric.SqlQuery)"
-                                                                                  OnDidChangeModelContent="() => UpdateSqlQuery(metric)"/>
+                                                                                    ConstructionOptions="(e) => GetMonacoOptions(e, metric.SqlQuery)"
+                                                                                    OnDidChangeModelContent="() => UpdateSqlQuery(metric)"/>
                                                         </div>
                                                     </MudItem>
                                                 </MudGrid>
@@ -356,14 +353,12 @@
                                         </MudExpansionPanel>
                                     }
                                 </MudExpansionPanels>
-                            </MudCardContent>
+
                         }
-                    </MudCard>
-                }
-            }
-        
+                    }
+                </MudCardContent>
+            </MudCard>
         </MudTabPanel>
-    
     </MudTabs>
 </MudForm>
 

@@ -162,6 +162,9 @@
 
         // Track the running task
         _timerTask = RunTimerAsync(_cts.Token);
+
+        // Refresh data via Fluxor Action
+        Dispatcher.Dispatch(new FetchReportQueueAction(SelectedFilter));
     }
 
     private async Task RunTimerAsync(CancellationToken cancellationToken)
