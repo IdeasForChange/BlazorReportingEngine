@@ -71,8 +71,7 @@
                 </ToolBarContent>
 
                 <Columns>
-
-                    <PropertyColumn Property="x => x.Id" Title="Id" />
+                    <HierarchyColumn T="ReportRunnerQueueDto" />
                     <PropertyColumn Property="x => x.ReportName" Title="Report Name" />
                     <TemplateColumn Title="Status">
                          <CellTemplate>
@@ -86,19 +85,16 @@
                             @context.Item.CreatedAtUtc.ToLocalTime().ToString("g")
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Result">
+                    <TemplateColumn Title="Time Taken">
                         <CellTemplate>
-                        @if (!string.IsNullOrEmpty(context.Item.OutputFilePath))
-                        {
-                            <MudText Typo="Typo.caption">@context.Item.OutputFilePath</MudText>
-                        }
-                        else if (!string.IsNullOrEmpty(context.Item.ErrorMessage))
-                        {
-                            <MudText Typo="Typo.caption" Color="Color.Error">@context.Item.ErrorMessage</MudText>
-                        }
+                            @if (context.Item.Status == (int)QueueStatus.Completed)
+                            {
+                                <strong>Started At: </strong>@context.Item.StartedAtUtc?.ToLocalTime().ToString("g")<br />
+                                <strong>Completed At: </strong>@context.Item.CompletedAtUtc?.ToLocalTime().ToString("g")<br />
+                                <strong>Time Taken: </strong> 
+                            }    
                         </CellTemplate>
                     </TemplateColumn>
-
                     <TemplateColumn Title="Actions">
                         <CellTemplate>
                         @if (context.Item.Status == (int)QueueStatus.Processing || context.Item.Status == (int)QueueStatus.Pending)
@@ -106,17 +102,25 @@
                             <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error"
                                            OnClick="() => KillJob(context.Item.Id)" Title="Kill/Cancel Job" />
                         }
-                        @if (!string.IsNullOrEmpty(context.Item.OutputFilePath))
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Primary"
-                                           OnClick="() => OpenFile(context.Item.OutputFilePath)" Title="Download/View File" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Folder" Color="Color.Secondary"
-                                           OnClick="() => OpenFolder(context.Item.OutputFilePath)" Title="Open Folder" />
-                        }
                         </CellTemplate>
                     </TemplateColumn>
 
                 </Columns>
+                <ChildRowContent>
+                    <MudCard>
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6">RESULT: </MudText> 
+                            @if (!string.IsNullOrEmpty(context.Item.OutputFilePath))
+                            {
+                                <MudText Typo="Typo.caption">@context.Item.OutputFilePath</MudText>
+                            }
+                            else if (!string.IsNullOrEmpty(context.Item.ErrorMessage))
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Error">@context.Item.ErrorMessage</MudText>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </ChildRowContent>
 
                 <NoRecordsContent>
                     <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="py-12">

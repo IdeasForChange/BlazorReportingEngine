@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Smbc.Risk.Core.Application.Services;
@@ -208,39 +209,58 @@ public class ReportRunnerQueueService(
     private async Task ProcessCellQuery(long jobId, XLWorkbook workbook, Dictionary<string, string>? parameters, CancellationToken cancellationToken)
     {
         var totalMetrics = workbook.Worksheets.Count *
-                           workbook.Worksheets.SelectMany(p => p.CellsUsed(cell => !cell.HasFormula &&
-            !cell.IsEmpty())).Count();
+                           workbook.Worksheets.SelectMany(p => p.CellsUsed()).Count();
         var processedMetrics = 0;
 
         foreach (var worksheet in workbook.Worksheets)
         {
             // Find all used cells that do not contain formulas and are not empty
-            var populatedDataCells = worksheet.CellsUsed(cell =>
-                !cell.HasFormula &&
-                !cell.IsEmpty()
-            );
+            var populatedDataCells = worksheet.CellsUsed();
 
             foreach (var targetCell in populatedDataCells)
             {
-                var cellSqlQuery = targetCell.GetValue<string>();
+                if (!targetCell.HasFormula)
+                    continue;
 
-                // Process your cell...
-                // Replace Parameter placeholders (@ParamName) in SQL
-                var finalSql = parameters?.Aggregate(cellSqlQuery, (current, param) => current.Replace($"@{param.Key}", param.Value.Replace("'", "''")));
+                var formula = targetCell.FormulaA1;
 
-                logger.LogInformation($"Executing SQL: {finalSql}, Max Rows: {1} against Database Connection: .");
+                // Quick filter - avoid trying to evaluate every formula.
+                if (!formula.Contains("SELECT", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                string finalSql = targetCell.Value.ToString();
                 if (string.IsNullOrEmpty(finalSql))
                 {
                     continue;
                 }
 
-                // Execute Dynamic Query via EF Connection / DbConnection
-                var dataTable = await dynamicQueryExecutor.ExecuteQueryAsync(1, finalSql, 1, cancellationToken);
+                logger.LogInformation($"Executing SQL: {finalSql}, Max Rows: {1} against Database Connection: .");
 
-                // 3. Populate data into the newly created space
-                targetCell.InsertData(dataTable);
+                try
+                {
+                    // Execute Dynamic Query via EF Connection / DbConnection
+                    var dataTable = await dynamicQueryExecutor.ExecuteQueryAsync(1, finalSql, 1, cancellationToken);
 
-                logger.LogInformation($"INSERTED: {dataTable.Rows.Count} number of rows in the spreadsheet for Cell: {targetCell.Address.ColumnLetter}{targetCell.Address.RowNumber}.");
+                    var value = dataTable.Rows.Count > 0 ? dataTable.Rows[0][0] : 0;
+
+                    // 3. Populate data into the newly created space
+                    try
+                    {
+                        targetCell.Value = Convert.ToDecimal(value);
+                    }
+                    catch
+                    {
+                        targetCell.Value = 0.0;
+                    }
+
+                    logger.LogInformation($"INSERTED: {dataTable.Rows.Count} number of rows in the spreadsheet for Cell: {targetCell.Address.ColumnLetter}{targetCell.Address.RowNumber}.");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning($"SQL Query Threw exception {finalSql}- {ex.Message}");
+                }
             }
 
             processedMetrics++;
